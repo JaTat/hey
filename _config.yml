@@ -3,7 +3,7 @@
 
 # Uncomment and set the URL of your site (with protocol, e.g. `https://`)
 # NOTE: You don't need to provide this property when hosting on GitHub Pages or Netlify.
-url: https://jatat.github.io/hey/
+url: https://jatat.github.io/hey
 
 # Uncomment and set the "base URL" of your site.
 # When your site is in a subdirectory, set to `/<name of directory>`,
@@ -49,9 +49,9 @@ author:
 # Add links to the sidebar.
 menu:
   - title: About me
-    url: /about/
-  # - title: Documentation
-  #   url: /docs/
+    url: /
+  - title: Work in progress
+    url: /work-in-progress/
   # - title: About
   #   url: /about/
 
@@ -73,23 +73,23 @@ permalink: /:categories/:year-:month-:day-:title/
 
 # Pagination configuration (used by the `blog` layout)
 paginate: 10
-paginate_path: /:num/
+paginate_path: /work-in-progress/:num/
 
 # Collections
 # ----------------------------------------------------------------------------------------
 
-collections:
-  featured_categories:
-    permalink: /:name/
-    output: true
+# collections:
+#   featured_categories:
+#     permalink: /:name/
+#     output: true
 
-  featured_tags:
-    permalink: /tag-:name/
-    output: true
+#   featured_tags:
+#     permalink: /tag-:name/
+#     output: true
 
-  projects:
-    permalink: /projects/:path/
-    output: true
+#   projects:
+#     permalink: /projects/:path/
+#     output: true
 
 # Theme
 # ---------------------------------------------------------------------------------------
@@ -378,29 +378,29 @@ sass:
 # Jekyll Compose Defaults
 # ---------------------------------------------------------------------------------------
 
-jekyll_compose:
-  default_front_matter:
-    drafts:
-      layout: post
-      description: >
-        A short ~160 character description of your post for search engines,
-        social media previews, etc.
-      image:
-        path: /assets/img/sidebar-bg.jpg
-    posts:
-      layout: post
-      description: >
-        A short ~160 character description of your post for search engines,
-        social media previews, etc.
-      image:
-        path: /assets/img/sidebar-bg.jpg
-    projects:
-      layout: project
-      description: >
-        A short ~160 character description of your post for search engines,
-        social media previews, etc.
-      image:
-        path: /assets/img/sidebar-bg.jpg
-      links:
-        - title: Project Link
-          url: https://example.com
+# jekyll_compose:
+#   default_front_matter:
+#     drafts:
+#       layout: post
+#       description: >
+#         A short ~160 character description of your post for search engines,
+#         social media previews, etc.
+#       image:
+#         path: /assets/img/sidebar-bg.jpg
+#     posts:
+#       layout: post
+#       description: >
+#         A short ~160 character description of your post for search engines,
+#         social media previews, etc.
+#       image:
+#         path: /assets/img/sidebar-bg.jpg
+#     projects:
+#       layout: project
+#       description: >
+#         A short ~160 character description of your post for search engines,
+#         social media previews, etc.
+#       image:
+#         path: /assets/img/sidebar-bg.jpg
+#       links:
+#         - title: Project Link
+#           url: https://example.com
