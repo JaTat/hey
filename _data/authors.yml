@@ -8,7 +8,7 @@ author1:
   # Used at the bottom of each page and at the top of the `about` layout
   # Markdown enabled, can use multiple paragraphs (enabled by `|`)
   about:             |
-        Hey I am Jan.
+        Hey, I am Jan.
         I am an Advanced Analytics/ BI Consultant turned Data Management enthusiast.
         I am driven by the believe that product centric thinking will unlock the potential of corporate data.
         Thats why I push for data literacy and democratization of data engineering tools and knowledge.
