@@ -48,10 +48,10 @@ author:
 
 # Add links to the sidebar.
 menu:
-  - title: About me
+  - title: Blog
     url: /
-  - title: Work in progress
-    url: /work-in-progress/
+  - title: About me
+    url: /about/
   # - title: About
   #   url: /about/
 
@@ -69,11 +69,11 @@ legal:
 copyright: © 2020. All rights reserved.
 
 # Format of the permalinks
-permalink: /:categories/:year-:month-:day-:title/
+permalink: /:year-:month-:day-:title/
 
 # Pagination configuration (used by the `blog` layout)
 paginate: 10
-paginate_path: /work-in-progress/:num/
+paginate_path: /:num/
 
 # Collections
 # ----------------------------------------------------------------------------------------

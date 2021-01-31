@@ -5,8 +5,7 @@ description: >
   Hey this page is about me, Jan Tatzel. I am an aspiring data management
   enthusiast working for Mercedes-Benz
 hide_description: true
-# redirect_from:
-#   - /download/
+permalink: /about/
 ---
 
 # About Me
