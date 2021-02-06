@@ -101,7 +101,11 @@ theme: jekyll-theme-hydejack
 # ----------------------------------------------------------------------------------------
 
 # Sidebar image and theme color of the site.
-accent_image: /assets/img/street.JPG
+accent_image: /assets/img/street@0.8x.jpg
+  # srcset:
+  #   1920w: /assets/img/street.jpg
+  #   960w: /assets/img/street@0.5x.jpg
+  #   480w: /assets/img/street@0.25x.jpg
 accent_color: rgb(79,177,186)
 
 # This is used for the `theme-color` meta tag,
@@ -171,10 +175,10 @@ defaults:
       seo:
         type: WebPage
 
-kramdown:
-  math_engine: mathjax
-  math_engine_opts: {}
-  footnote_backlink: "&#x21a9;&#xfe0e;"
+# kramdown:
+#   math_engine: mathjax
+#   math_engine_opts: {}
+#   footnote_backlink: "&#x21a9;&#xfe0e;"
 
 # 3rd Party Integrations
 # ----------------------------------------------------------------------------------------

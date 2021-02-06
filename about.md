@@ -1,15 +1,20 @@
 ---
 layout: about
-image: /assets/img/about/header.jpg
+image:
+  path: /assets/img/about/header.jpg
+  srcset:
+    1920w: /assets/img/about/header.jpg
+    960w: /assets/img/about/header@0.5x.jpg
+    480w: /assets/img/about/header@0.25x.jpg
 description: >
   Hey this page is about me, Jan Tatzel. I am an aspiring data management
-  enthusiast working for Mercedes-Benz
+  enthusiast working for Mercedes-Benz.
 hide_description: true
 permalink: /about/
 ---
 
 # About Me
-![Header](/assets/img/about/header.jpg){:.lead width="1920" height="1080" loading="lazy"}
+![Header]($baseurl/assets/img/about/header.jpg){:.lead width="1920" height="1080" loading="lazy"}
 
 
 <!--author-->

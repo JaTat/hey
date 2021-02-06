@@ -8,7 +8,14 @@ ENV LANG=en_US.UTF-8 \
     LANG=en_US.UTF-8 \
     LANGUAGE=en_US
 
+#install imagemagick for automatic image resizing
+RUN sudo su -
+RUN apt update
+RUN apt install -y imagemagick
+RUN apt-get -y libmagickwand-dev
+RUN exit
     # Install jekyll
+    
 RUN gem install bundler jekyll
 
 # [Option] Install Node.js
