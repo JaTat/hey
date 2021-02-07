@@ -14,7 +14,7 @@ permalink: /about/
 ---
 
 # About Me
-![Header]($baseurl/assets/img/about/header.jpg){:.lead width="1920" height="1080" loading="lazy"}
+![Header](/assets/img/about/header@0.5x.jpg){:.lead width="1920" height="1080" loading="lazy"}
 
 
 <!--author-->
