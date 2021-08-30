@@ -13,7 +13,7 @@ grouped: true
 ---
 
 Hey there!
-Although I haven't written about it I continued my learning journey in my self hosted BW/4 system. In this post I will connect my favourite Data Science tool, Python, with BW/4's underlying database HANA. I will read out the metadata describing the data objects I have created and quickly visualize them to show you my progress. This can come in handy when we want to analyze the data model in our BW/4 platform e.g. the reusage of Infoobjects, i.e. MasterData.
+Although I haven't written about it, I continued my learning journey in my self hosted BW/4 system. In this post I will connect my favourite Data Science tool, Python, with BW/4's underlying database HANA. I will read out the metadata describing the data objects I have created and quickly visualize them to show you my progress. This can come in handy when we want to analyze the data model in our BW/4 platform e.g. the reusage of Infoobjects, i.e. MasterData.
 
 
 ## How to connect Python to Hana
