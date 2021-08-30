@@ -35,6 +35,14 @@ Complete SQL Bootcamp (2020)
 Complete machine learning cource in python (2020)
 {:.figcaption}
 
+![AbapCert1](/assets/img/about/ABAP_Certificate_1.jpg){:.lead width="1200" height="893" loading="lazy"}
+ABAP Introduction Course
+{:.figcaption}
+
+![AbapCert2](/assets/img/about/ABAP_Certificate_2.jpg){:.lead width="1200" height="893" loading="lazy"}
+ABAP Introduction Course Complex Data Structures
+{:.figcaption}
+
 ![SAFE](/assets/img/about/SAFe.png){:.lead width="600" height="600" loading="lazy"}
 Certified SAFe® 5 Agilist (2020)
 {:.figcaption}
