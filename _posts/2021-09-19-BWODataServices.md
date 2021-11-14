@@ -72,7 +72,7 @@ I create a new repository package, OData, in the eclipse HANA development perspe
 
 Following [this](https://blogs.sap.com/2018/07/02/how-to-expose-a-hana-table-via-OData/) Blogpost I now have to create a number of files:
 
-They are all created similiarly by right clicking the package, New, Other and choosing the correct wizard.
+They are all created similarly by right clicking the package, New, Other and choosing the correct wizard.
 
 ![Repo](/assets/img/blog/OData/CreateArtifacts.png)
 
@@ -267,7 +267,7 @@ I run this Query in the system database and the tenant database since its not sp
 
 ## Configure the SQL user in the XS ADMIn Tool
 
-Finally I see my OData Service in the XS Admin tool. I can configure the Database user with a click on edit. I add the SAPHANADB user to the anonymous sql connection.
+Finally I see my OData Service in the XS Admin tool. I can configure the Database user with a click on edit. I add the SAPHANADB user to the anonymous SQl connection.
 
 ![Finally the db user for the OData Service can be configured](/assets/img/blog/OData/ODataXS.png)
 
