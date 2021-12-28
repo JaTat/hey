@@ -3,7 +3,7 @@
 
 # Uncomment and set the URL of your site (with protocol, e.g. `https://`)
 # NOTE: You don't need to provide this property when hosting on GitHub Pages or Netlify.
-url: 'https://jantatzel.com'
+url: "https://jantatzel.com"
 
 # Uncomment and set the "base URL" of your site.
 # When your site is in a subdirectory, set to `/<name of directory>`,
@@ -41,7 +41,7 @@ logo: /assets/img/Jan_rund_small.jpg
 author:
   # Used by `jekyll-feed`:
   name: Jan Tatzel
-  email: jan.tatzel@gmail.com
+  email: jye9pyu5g@mozmail.com
   picture: /assets/img/Jan_rund_small.jpg
   # # Used by `jekyll-seo-tag`:
   # twitter:             <username>
@@ -101,7 +101,8 @@ theme: jekyll-theme-hydejack
 # ----------------------------------------------------------------------------------------
 
 # Sidebar image and theme color of the site.
-accent_image: /assets/img/street@0.8x.jpg
+accent_image:
+  /assets/img/street@0.8x.jpg
   # srcset:
   #   1920w: /assets/img/street.jpg
   #   960w: /assets/img/street@0.5x.jpg
@@ -378,7 +379,6 @@ compress_html:
 
 sass:
   style: compressed
-
 # Jekyll Compose Defaults
 # ---------------------------------------------------------------------------------------
 

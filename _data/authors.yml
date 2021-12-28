@@ -2,24 +2,21 @@
 # Must be the same as `author` in `_config.yml`.
 # Change `author1` to your shortname.
 author1:
-  name:              Jan Tatzel
-  email:             jan.tatzel@gmail.com
+  name: Jan Tatzel
+  email: jye9pyu5g@mozmail.com
 
   # Used at the bottom of each page and at the top of the `about` layout
   # Markdown enabled, can use multiple paragraphs (enabled by `|`)
-  about:             |
-        Hey, I am Jan.
-        I am an Advanced Analytics/ BI Consultant turned Data Management enthusiast.
-        I love to dive into new technologies. I am currently working for Mercedes-Benz.
-        
-        
-        
+  about: |
+    Hey, I am Jan.
+    I am an Advanced Analytics/ BI Consultant turned Data Management enthusiast.
+    I love to dive into new technologies. I am currently working for Mercedes-Benz.
 
   # This photo will be used in the about section
- # picture:
- #   path:            /assets/img/Jan_rund_verysmall.jpg
-    # srcset is optional, but can be used to provide higher res versions for retina displays
- #   srcset:
+  # picture:
+  #   path:            /assets/img/Jan_rund_verysmall.jpg
+  # srcset is optional, but can be used to provide higher res versions for retina displays
+  #   srcset:
   #    1x:            /assets/img/Jan_rund_verysmall.jpg
   #    2x:            /assets/img/Jan_rund_small.jpg
 
@@ -28,10 +25,10 @@ author1:
   # Rearrange to change the order in which they appear
   social:
     #twitter:         <username>
-    email:           jan.tatzel@gmail.com
-    linkedin:        jan-tatzel-42369a182
-    xing:            Jan_Tatzel
-    github:          JaTat
+    email: jye9pyu5g@mozmail.com
+    linkedin: jan-tatzel-42369a182
+    xing: Jan_Tatzel
+    github: JaTat
     # rss:             https://<url>/feed.xml
     # facebook:        <username>
     # google:          <number>
@@ -67,7 +64,6 @@ author1:
     # paypal:          <username>
     # download:        <url>
     # keybase          <username>
-
 # Another author (optional)
 # author2:
 #   name:              <firtname> <lastname>
