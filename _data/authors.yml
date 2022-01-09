@@ -1,6 +1,7 @@
 # The primary author of this blog.
 # Must be the same as `author` in `_config.yml`.
 # Change `author1` to your shortname.
+#Mozilla Relay
 author1:
   name: Jan Tatzel
   email: jye9pyu5g@mozmail.com

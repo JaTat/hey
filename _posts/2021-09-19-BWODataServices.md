@@ -6,7 +6,7 @@ image:
   srcset:
     1920w: /assets/img/blog/OData/social-media-5187243_1920.png
     960w:  /assets/img/blog/OData/social-media-5187243_1280.png
-    480w:  /assets/img/blog/OData/social-media-5187243_640.png.jpg
+    480w:  /assets/img/blog/OData/social-media-5187243_640.png
 description: >
   Creating an OData service from a SAP HANA table in my SAP BW/4
 grouped: true
