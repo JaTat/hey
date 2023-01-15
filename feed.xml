@@ -1,0 +1,1275 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.2.0">Jekyll</generator><link href="https://jantatzel.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://jantatzel.com/" rel="alternate" type="text/html" hreflang="en" /><updated>2023-01-15T15:43:00+00:00</updated><id>https://jantatzel.com/feed.xml</id><title type="html">Jan Tatzel</title><subtitle>I am an Advanced Analytics/ BI Consultant turned Data Management enthusiast.
+</subtitle><author><name>Jan Tatzel</name><email>jye9pyu5g@mozmail.com</email></author><entry><title type="html">Metabase - BI on ERPnext</title><link href="https://jantatzel.com/2023-01-06-Metabase/" rel="alternate" type="text/html" title="Metabase - BI on ERPnext" /><published>2023-01-06T00:00:00+00:00</published><updated>2023-01-06T00:00:00+00:00</updated><id>https://jantatzel.com/Metabase</id><content type="html" xml:base="https://jantatzel.com/2023-01-06-Metabase/">&lt;p&gt;Hey there! In one of my last blog posts, &lt;a href=&quot;/2022-01-02-FossErp/&quot;&gt;here&lt;/a&gt;, I set up an Open Source ERP system called ERPNext that keeps track of all important business processes. To analyze all this data a dedicated Business Intelligence [BI] system is the best choice. There are many BI systems out there. Popular ones include Tableau, PowerBI or SAP Analytics Cloud for the SAP users out there. These tools typically cost money so a popular choice among cash strapped startups is &lt;a href=&quot;https://www.metabase.com/&quot;&gt;Metabase&lt;/a&gt;. It is an easy to use dashboarding tool that can be hosted anywhere, connects to the most common databases and has a free license available that comes with the most important features to get started. You can also choose to pay for a &lt;a href=&quot;https://www.metabase.com/pricing/&quot;&gt;hosted version&lt;/a&gt; or for additional features like single sign on. Below I explore how to install it on a Linux VM and connect it to ERPNext.&lt;/p&gt;
+
+&lt;h1 id=&quot;prerequisites&quot;&gt;Prerequisites&lt;/h1&gt;
+
+&lt;p&gt;You will need a VM running Ubuntu &amp;gt;=18.04 with at least 1GB and 1 vCPU (&lt;a href=&quot;https://discourse.metabase.com/t/what-are-metabase-minimum-resources/21470&quot;&gt;Source&lt;/a&gt;). I would recommend to start with twice the size and if you expect a lot of concurrent access scale it accordingly. You can always adjust the allocated RAM in your hypervisor later. Also Metabase is designed to scale horizontally across many application servers.
+In your VM you will also need:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;a priviledged user&lt;/li&gt;
+  &lt;li&gt;internet access&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;installation&quot;&gt;Installation&lt;/h1&gt;
+&lt;p&gt;The installation follows the official Metabase documentation for a productive setup: &lt;a href=&quot;https://www.metabase.com/docs/latest/installation-and-operation/running-metabase-on-docker#production-installation&quot;&gt;Link&lt;/a&gt;. I will run Metabase in docker using docker compose. Metabase needs a database to store internal information like dashboards, users etc. I will use Postgres as its database and run it on the same host. Note that you might want to run postgres on a different host for increased resilience. Depending on how critical the availability of Metabase is to you, you might also want to run Metabase and its underlying database in a high availability setup. This would require you to set up a proxy and one or two additional hosts as well as a sync for the internal database. The following is a minimal installation without high availability.&lt;/p&gt;
+
+&lt;h2 id=&quot;installing-docker-engine-and-docker-compose&quot;&gt;Installing docker engine and docker compose&lt;/h2&gt;
+
+&lt;p&gt;I assume you start with a clean VM.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Uninstall docker on your VM
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt-get purge docker-ce docker-ce-cli containerd.io docker-compose-plugin
+ &lt;span class=&quot;nb&quot;&gt;sudo rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-rf&lt;/span&gt; /var/lib/docker &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;sudo rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-rf&lt;/span&gt; /var/lib/containerd
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Install docker by adding it to the list of repositories, following the official guide which can be found &lt;a href=&quot;https://docs.docker.com/engine/install/ubuntu/&quot;&gt;here&lt;/a&gt;:&lt;/p&gt;
+
+    &lt;ol&gt;
+      &lt;li&gt;Update and install dependencies&lt;/li&gt;
+    &lt;/ol&gt;
+
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt-get update
+ &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt-get &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ ca-certificates &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ curl &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ gnupg &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ lsb-release
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;ol&gt;
+      &lt;li&gt;Download the GPG key to verify validity of the install packages&lt;/li&gt;
+    &lt;/ol&gt;
+
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nb&quot;&gt;sudo mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /etc/apt/keyrings
+ curl &lt;span class=&quot;nt&quot;&gt;-fsSL&lt;/span&gt; https://download.docker.com/linux/ubuntu/gpg | &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;gpg &lt;span class=&quot;nt&quot;&gt;--dearmor&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; /etc/apt/keyrings/docker.gpg
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;ol&gt;
+      &lt;li&gt;Add the repository&lt;/li&gt;
+    &lt;/ol&gt;
+
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+ &lt;span class=&quot;s2&quot;&gt;&quot;deb [arch=&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;dpkg &lt;span class=&quot;nt&quot;&gt;--print-architecture&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; signed-by=/etc/apt/keyrings/docker.gpg]
+ https://download.docker.com/linux/ubuntu &lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;
+   &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;lsb_release &lt;span class=&quot;nt&quot;&gt;-cs&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt; stable&quot;&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;sudo tee&lt;/span&gt; /etc/apt/sources.list.d/docker.list &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; /dev/null
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;ol&gt;
+      &lt;li&gt;Install docker&lt;/li&gt;
+    &lt;/ol&gt;
+
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt-get update
+ &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;apt-get &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;docker-ce docker-ce-cli containerd.io docker-compose-plugin
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;ol&gt;
+      &lt;li&gt;Verify that docker is running&lt;/li&gt;
+    &lt;/ol&gt;
+
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;docker run hello-world
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;In your terminal docker should confirm the successful information.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Create a docker-compose file e.g. in your home directory&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vi /home/docker-compose.yml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Add the following to the docker-compose file:&lt;/p&gt;
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;na&quot;&gt;services&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+
+  &lt;span class=&quot;na&quot;&gt;postgres-db&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;image&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;postgres:15&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;restart&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;always&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# ports:&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;#   - 5432:5432&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;env_file&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;.db.env&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;volumes&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;c1&quot;&gt;# declare your mount volume /host/dir:/container/dir&lt;/span&gt;
+      &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;/home/app/metadata:/var/lib/postgresql/data&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;networks&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;metabase-network&lt;/span&gt;
+
+  &lt;span class=&quot;na&quot;&gt;metabase-app&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;image&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;metabase/metabase&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;restart&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;always&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;ports&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;3000:3000&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;env_file&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;.metabase.env&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;depends_on&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;postgres-db&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;networks&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+      &lt;span class=&quot;pi&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;metabase-network&lt;/span&gt;
+
+&lt;span class=&quot;na&quot;&gt;networks&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;na&quot;&gt;metabase-network&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;driver&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;bridge&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;This file defines two services, the postgres database as the internal database of Metabase, where all the Metadata about the dashboards, users etc. is stored and the Metabase app. The file also defines the network that the docker containers use to communicate with each other.
+It is important to define a persistent volume for the postgres, this is where the internal data of Metabase will be stored on your host. you can backup or sync this directory e.g. via rsync. This is done under &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;volumes:&lt;/code&gt;&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;create the .env files that configure Metabase and the Postgres database to work together.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;touch&lt;/span&gt; /home/.db.env
+&lt;span class=&quot;nb&quot;&gt;touch&lt;/span&gt; /home/.metabase.env
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;in .db.env add:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;POSTGRES_USER=&amp;lt;e.g. metabase&amp;gt;
+POSTGRES_PASSWORD=&amp;lt;somePassword&amp;gt;
+PGDATA = /var/lib/postgresql/data
+POSTGRES_DB=&amp;lt;e.g. metabasedbapp&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In .metbase.env add:&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;# Metabase
+MB_DB_USER=&amp;lt;your Postgres DB user specified above&amp;gt;
+MB_DB_PASS=&amp;lt;your Postgres DB password specified above&amp;gt;
+MB_DB_TYPE=postgres
+MB_DB_DBNAME=&amp;lt;same db name as above e.g. metabasedbapp&amp;gt;
+MB_DB_PORT=5432
+MB_DB_HOST=postgres-db
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;make sure to replace everything in &amp;lt;…&amp;gt;.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Create a shell script that loads your compose file on start of the VM. .
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;vi /home/admin_metabase/Rezemo/Metabase/startup_mb.sh
+&lt;span class=&quot;nb&quot;&gt;sudo chmod&lt;/span&gt; +x /home/admin_metabase/Rezemo/Metabase/startup_mb.sh
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;Add to the startup_mb.sh file:
+ #!/bin/bash
+ cd /home/startup_mb.sh
+ docker compose up -d&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Instead of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;cd&lt;/code&gt; to the directory you could also specify the file in the docker compose command&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Configure autostart of docker-compose on VM start:
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;crontab &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;In crontab add:
+ @reboot /home/admin/metabase/Rezemo/Metabase/startup_mb.sh&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Reboot your VM with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sudo reboot&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;With this you should have a running Metabase on &amp;lt;ip-of-your-VM&amp;gt;:3000. Metabase will lead you through the configuration.&lt;/p&gt;
+
+&lt;h1 id=&quot;create-a-user-for-metabase-and-allow-connection-to-the-erpnext-database&quot;&gt;Create a user for Metabase and allow connection to the ERPNext database&lt;/h1&gt;
+
+&lt;p&gt;In order to analyze data we need access to the ERPNext database.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Log into your ERPNext database e.g. when you are running mariadb (mysql is very similar):
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;mysql &lt;span class=&quot;nt&quot;&gt;-uroot&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;enter your password and create a new user.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;CREATE&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;USER&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;username&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;@&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;hostnameOrIP&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;/&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;netmask&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;IDENTIFIED&lt;/span&gt;  &lt;span class=&quot;k&quot;&gt;BY&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'password'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;hostnameOrIP/netmask: is the hostname or IP of your Metabase VM. With Netmask you can also specify a subnet e.g. 192.168.1.0/255.255.255.0 to allow the user to connect from the entire subnet of 192.168.1.*&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Find your ERPNext database, the name should be a cryptic sequence of letters and numbers such as &lt;em&gt;_4lo8f489pl3218&lt;/em&gt;
+    &lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;SHOW&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DATABASES&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Grant Read Rights to the Metabase user:
+    &lt;div class=&quot;language-sql highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;GRANT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;SELECT&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;ON&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;yourdbname&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;TO&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'metabase'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'192.168.1.0/255.255.255.0'&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;identified&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;by&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'password'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;nv&quot;&gt;`FLUSH PRIVLEGES`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+    &lt;p&gt;where &lt;yourdbname&gt; is the db name from the step above.&lt;/yourdbname&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Edit /etc/mysql/mariadb.conf.d/50-server.cnf and change bind-address = 0.0.0.0
+    &lt;div class=&quot;language-sh highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vi /etc/mysql/mariadb.conf.d/50-server.cnf
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Reboot the ERPNext VM with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sudo reboot&lt;/code&gt;&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h1 id=&quot;connect-to-erpnext-in-metabase&quot;&gt;Connect to ERPNext in Metabase:&lt;/h1&gt;
+
+&lt;p&gt;After logging in with your Admin user head to the administration configuration and databases and add a new database:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/Metabase/ConnectDB.png&quot; alt=&quot;Connect Database&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;final-thoughts&quot;&gt;Final thoughts&lt;/h1&gt;
+
+&lt;p&gt;Since I run the BI tool directly against the productive database I always have real time data which is great. On the other hand complex analytical queries will likely take long and impair the performance of transactional processes. Therefore it makes sense to set a high caching time for long running queries in the Metabase settings and also set a fixed time for schema scans in the database e.g. during the night.
+When your analytical loads continue to grow, you should certainly think about offloading the analytical workload to a dedicated datawarehouse, i.e. a database optimized for typical analytical workloads like multidimensional data analyses.&lt;/p&gt;</content><author><name>Jan Tatzel</name><email>jye9pyu5g@mozmail.com</email></author><summary type="html">Hey there! In one of my last blog posts, here, I set up an Open Source ERP system called ERPNext that keeps track of all important business processes. To analyze all this data a dedicated Business Intelligence [BI] system is the best choice. There are many BI systems out there. Popular ones include Tableau, PowerBI or SAP Analytics Cloud for the SAP users out there. These tools typically cost money so a popular choice among cash strapped startups is Metabase. It is an easy to use dashboarding tool that can be hosted anywhere, connects to the most common databases and has a free license available that comes with the most important features to get started. You can also choose to pay for a hosted version or for additional features like single sign on. Below I explore how to install it on a Linux VM and connect it to ERPNext.</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://jantatzel.com/assets/img/blog/Metabase/cube_1920.jpg" /><media:content medium="image" url="https://jantatzel.com/assets/img/blog/Metabase/cube_1920.jpg" xmlns:media="http://search.yahoo.com/mrss/" /></entry><entry><title type="html">PyRFC - Remote Controlling SAP ABAP systems with python</title><link href="https://jantatzel.com/2022-05-22-PyRFC/" rel="alternate" type="text/html" title="PyRFC - Remote Controlling SAP ABAP systems with python" /><published>2022-05-22T00:00:00+00:00</published><updated>2022-05-22T00:00:00+00:00</updated><id>https://jantatzel.com/PyRFC</id><content type="html" xml:base="https://jantatzel.com/2022-05-22-PyRFC/">&lt;p&gt;Hey there! It can be hard as a Data Scientist in a BI organization that uses SAP BW as the main data warehouse technology. All these hard earned python skills are useless when your data is locked up under a layer of application written in ABAP, SAP’s proprietary language.&lt;/p&gt;
+
+&lt;p&gt;Imagine you could run ABAP modules to read and write into tables or execute functionality in a SAP Netweaver based system, all from Python. This is possible with &lt;a href=&quot;https://github.com/SAP/PyRFC&quot;&gt;pyRFC&lt;/a&gt;, a python library that works as an API to SAP’s Netweaver Remote Function Call Software Development Kit (NWRFC SDK). The SDK allows developers to build programs that can call or can be called from ABAP software.&lt;/p&gt;
+
+&lt;h1 id=&quot;prerequisites&quot;&gt;Prerequisites&lt;/h1&gt;
+&lt;ul&gt;
+  &lt;li&gt;SAP RFC SDK 7.5: To download the SDK you need a SAP customer account that is usually tied to a license. The download link can be found in SAP Note 2573790, follow the link &lt;a href=&quot;https://support.sap.com/en/product/connectors/nwrfcsdk.html&quot;&gt;here&lt;/a&gt;. Make sure to choose the right operating system under downloads, the dropdown is a little tricky to find.&lt;/li&gt;
+  &lt;li&gt;SAP GUI for Windows: Needed for systems with Single Sign on enabled&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://cython.org/&quot;&gt;Cython&lt;/a&gt;: Pythons C extension, required since the SDK is a C/C++ interface&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;install-sap-netweaver-rfc-sdk-750&quot;&gt;Install SAP NetWeaver RFC SDK 7.50&lt;/h1&gt;
+
+&lt;h2 id=&quot;windows&quot;&gt;Windows&lt;/h2&gt;
+&lt;p&gt;Installation is straight forward following the instructions &lt;a href=&quot;http://sap.github.io/PyRFC/install.html&quot;&gt;here&lt;/a&gt;. You only have to create an env variable and extend the path.
+Env variables under windows are set permanently (written to registry) with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;setx &amp;lt;variable&amp;gt;&lt;/code&gt;. You need to restart the shell after executing. 
+Or you can use the GUI under advanced system settings –&amp;gt; environment variables. Choose if you want to change the variables system wide or only for your user.&lt;/p&gt;
+
+&lt;h1 id=&quot;ubuntu&quot;&gt;Ubuntu&lt;/h1&gt;
+
+&lt;p&gt;Note: I run Ubuntu 20.04 LTS and had to install from source.&lt;/p&gt;
+
+&lt;p&gt;Both python-dev and the python library Cython are a prerequisite to install from source. I install python dev with ubuntu’s package manager apt and Cython with pip.&lt;/p&gt;
+
+&lt;p&gt;In bash I create a new directory  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;mkdir /usr/local/sap/nwrfcsdk&lt;/code&gt;. Then I set the SAPNWRFC_HOME env variable to that directory with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;export SAPNWRFC_HOME=/usr/local/sap/nwrfcsdk&lt;/code&gt;. To make sure that worked I run &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;echo $SAPNWRFC_HOME&lt;/code&gt;. Next I copy the downloaded SDK into that directory and unzip it with  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;unzip /usr/local/sap/nwrfcsdk/nwrfc750P_9-70002752.zip&lt;/code&gt;. I move the contents of the newly created folder to its parent folder and delete the now empty nwrfcsdk folder. 
+So that python can find the libraries its important to create necessary system links. For this I add the lib folder to the path variable with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;export PATH=$PATH:/usr/local/sap/nwrfcsdk/lib&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;To update the shared libraries links and cache I follow the documentation and create a config file in /etc/ld.so.conf.d. As root:  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;vi /etc/ld.so.conf.d/nwrfcsdk.conf&lt;/code&gt;. And in the file I add:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;# include nwrfcsdk
+/usr/local/sap/nwrfcsdk/lib
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now as root: &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ldconfig&lt;/code&gt; and to check if the libraries were linked &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ldconfig -p | grep sap&lt;/code&gt; should show the libraries from &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/usr/local/sap/nwrfcsdk/lib&lt;/code&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;install-pyrfc&quot;&gt;Install pyRFC&lt;/h1&gt;
+&lt;p&gt;Get the latest release from GitHub by checking the &lt;a href=&quot;https://github.com/SAP/PyRFC/releases&quot;&gt;release page&lt;/a&gt;. At the time of writing the latest release is v2.5.0.. Installing pyRFC on Linux required me to build it from source. So I get the Source code archive with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;git clone  https://github.com/SAP/PyRFC&lt;/code&gt; cd into the cloned directory and run &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;python3 setup.py bdist_wheel&lt;/code&gt;. This should also work on Windows although here I was able to pip install the wheel I got from &lt;a href=&quot;https://github.com/SAP/PyRFC/releases/tag/v2.5.0&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;To check that the installation is working, I run from python:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;pyRFC&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;It returns nothing so I am good to go.&lt;/p&gt;
+
+&lt;h1 id=&quot;python-class-to-read-tables-from-a-bw&quot;&gt;Python class to read tables from a BW&lt;/h1&gt;
+
+&lt;p&gt;The class implementation is inspired by a blog post from &lt;a href=&quot;https://startup.lwmeta.com/2020/06/09/connecting-python-with-sap-step-by-step-guide/&quot;&gt;lwrc&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;It calls &lt;strong&gt;RowsAtATime&lt;/strong&gt; per batch and iterates as long as the result is larger than &lt;strong&gt;RowsAtATime&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;In my experience it is safe to set &lt;strong&gt;RowsAtATime&lt;/strong&gt; to ~1000.&lt;/p&gt;
+
+&lt;p&gt;Other important parameter are:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Fields: Allows you to specify fields as a list, the RFC module fails silently and returns no data when field is not present in table&lt;/li&gt;
+  &lt;li&gt;TableName: Specify name of table you want to call, check e.g. via &lt;a href=&quot;https://www.tcodesearch.com/&quot;&gt;TCodeSearch&lt;/a&gt;
+Where: Specify a where condition, sensitive to spaces around =&lt;/li&gt;
+  &lt;li&gt;RowsAtATime: The number of rows you want to transfer per iteration/ batch, smaller batches might be safer but take longer&lt;/li&gt;
+  &lt;li&gt;RowSkips: Number of rows to skip from the beginning of the table&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Note that you can check the parameters of a RFC modules with SAP transaction SE37 from SAP Logon.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;pyrfc&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Connection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ABAPApplicationError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ABAPRuntimeError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LogonError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CommunicationError&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;pprint&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;PrettyPrinter&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;configparser&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ConfigParser&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;pandas&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pd&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#Logging (not part of code below)
+# import logging
+# import logging.config
+# for timing the download
+&lt;/span&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;time&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;time&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;():&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;__init__&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ConfigParser&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;sapnwrfc.cfg&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;params_connection&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_sections&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;connection&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+            &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;conn&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Connection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;**&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params_connection&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            
+        &lt;span class=&quot;k&quot;&gt;except&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CommunicationError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Could not connect to server.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;raise&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;except&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;LogonError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Could not log in. Wrong credentials?&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;raise&lt;/span&gt;
+        
+    &lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;read_table&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Fields&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TableName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Where&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;''&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RowsAtATime&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RowSkips&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+      &lt;span class=&quot;s&quot;&gt;&quot;&quot;&quot;A function to call RFC_READ_TABLE&quot;&quot;&quot;&lt;/span&gt;
+      &lt;span class=&quot;k&quot;&gt;try&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+
+
+          &lt;span class=&quot;c1&quot;&gt;# Select option
+&lt;/span&gt;          &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Fields&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'*'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+              &lt;span class=&quot;n&quot;&gt;Fields&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;
+          &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+              &lt;span class=&quot;n&quot;&gt;Fields&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'FIELDNAME'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Fields&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; 
+
+          &lt;span class=&quot;c1&quot;&gt;# options to filter by table field
+&lt;/span&gt;          &lt;span class=&quot;n&quot;&gt;options&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'TEXT'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Where&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; 
+
+          &lt;span class=&quot;c1&quot;&gt;#list that gathers the queried data
+&lt;/span&gt;          &lt;span class=&quot;n&quot;&gt;l_result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[]&lt;/span&gt;
+
+          &lt;span class=&quot;c1&quot;&gt;# RFC call
+&lt;/span&gt;          &lt;span class=&quot;c1&quot;&gt;# if you want to time the download
+&lt;/span&gt;          &lt;span class=&quot;c1&quot;&gt;#start_time =  datetime.datetime.now()
+&lt;/span&gt;          &lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
+          &lt;span class=&quot;k&quot;&gt;while&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+              &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;conn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;call&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;RFC_READ_TABLE&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                  &lt;span class=&quot;n&quot;&gt;QUERY_TABLE&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TableName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;#
+&lt;/span&gt;                                  &lt;span class=&quot;n&quot;&gt;DELIMITER&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'|'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                  &lt;span class=&quot;n&quot;&gt;FIELDS&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Fields&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  
+                                  &lt;span class=&quot;n&quot;&gt;OPTIONS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                  &lt;span class=&quot;n&quot;&gt;ROWCOUNT&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RowsAtATime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                  &lt;span class=&quot;n&quot;&gt;ROWSKIPS&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;RowSkips&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                  &lt;span class=&quot;c1&quot;&gt;#ET_DATA_RETURN is somehow needed to export sstring data types, 
+&lt;/span&gt;                                  &lt;span class=&quot;n&quot;&gt;USE_ET_DATA_4_RETURN&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;X&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+              &lt;span class=&quot;n&quot;&gt;RowSkips&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RowsAtATime&lt;/span&gt;
+
+              &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;line&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'ET_DATA'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])):&lt;/span&gt;
+                  &lt;span class=&quot;c1&quot;&gt;#only append list to list not the returned dictionary
+&lt;/span&gt;                  &lt;span class=&quot;n&quot;&gt;l_result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'ET_DATA'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;line&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;][&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;LINE&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;strip&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+
+              &lt;span class=&quot;n&quot;&gt;headers&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;  &lt;span class=&quot;n&quot;&gt;headers&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'FIELDNAME'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'FIELDS'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]]&lt;/span&gt;  
+              &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;len&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'ET_DATA'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;RowsAtATime&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+                  &lt;span class=&quot;k&quot;&gt;break&lt;/span&gt;
+          &lt;span class=&quot;n&quot;&gt;l_result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;strip&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;split&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'|'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;l_result&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+          &lt;span class=&quot;n&quot;&gt;df&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;DataFrame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;l_result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;columns&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;headers&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+      &lt;span class=&quot;k&quot;&gt;except&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ABAPApplicationError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ABAPRuntimeError&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+          &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;An error occurred.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+          &lt;span class=&quot;k&quot;&gt;raise&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;# logging example
+&lt;/span&gt;        &lt;span class=&quot;c1&quot;&gt;# self.logger.info( &quot;Download time - {0} download took --- {1} seconds ---&quot;.format(TableName,datetime.datetime.now()- start_time ))
+&lt;/span&gt;
+      &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;exemplary-config&quot;&gt;Exemplary config&lt;/h2&gt;
+
+&lt;p&gt;Exemplary config for connecting to a SAP Netweaver system:&lt;/p&gt;
+
+&lt;div class=&quot;language-yaml highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;pi&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;connection&lt;/span&gt;&lt;span class=&quot;pi&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#For a definition of parameters check: https://docs.oracle.com/cd/E19509-01/820-5064/ggrpj/index.html&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;#For productive systems use message server:&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#mshost=&amp;lt;FQDN&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#else directly connect to the application sever:&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;ashost=&amp;lt;FQDN&amp;gt;&lt;/span&gt;
+
+&lt;span class=&quot;s&quot;&gt;sysnr= &amp;lt;SysNr, e.g. 00&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;sysid=&amp;lt;SysID&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;client= &amp;lt;ClientID e.g. 100&amp;gt;&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;#for user, password based authentication, not working when SNC is enabled:&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#user= &lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#passwd=&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# Find parameters in logon or eclipse:&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;snc_partnername=&amp;lt;SAP Server SNC name, e.g.  p:CN=EC7, O=SAP, C=US, OU=SAP&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;snc_myname= p:CN=&amp;lt;user&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;snc_qop= &amp;lt;the quality of the protection level, e.g. 9&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#language for connection (DE/EN):&lt;/span&gt;
+&lt;span class=&quot;s&quot;&gt;lang= EN&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Jan Tatzel</name><email>jye9pyu5g@mozmail.com</email></author><summary type="html">Hey there! It can be hard as a Data Scientist in a BI organization that uses SAP BW as the main data warehouse technology. All these hard earned python skills are useless when your data is locked up under a layer of application written in ABAP, SAP’s proprietary language.</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://jantatzel.com/assets/img/blog/PyRFC/coding_1920.jpg" /><media:content medium="image" url="https://jantatzel.com/assets/img/blog/PyRFC/coding_1920.jpg" xmlns:media="http://search.yahoo.com/mrss/" /></entry><entry><title type="html">FOSS ERP - Setting up and playing around with ERPNext</title><link href="https://jantatzel.com/2022-01-02-FossErp/" rel="alternate" type="text/html" title="FOSS ERP - Setting up and playing around with ERPNext" /><published>2022-01-02T00:00:00+00:00</published><updated>2022-01-02T00:00:00+00:00</updated><id>https://jantatzel.com/FossErp</id><content type="html" xml:base="https://jantatzel.com/2022-01-02-FossErp/">&lt;p&gt;Hey there! Imagine you have a small retail business and its the busy season of the year. You would probably like a system that keeps track of and helps to plan the goods on stock, your sales, no. of employees and their assignments, the expenses you have etc. This is what an ERP, Enterprise resource planning system does. It tracks and helps you plan your flow of goods, value, the usage of your capital etc.. Technically its a transactional system designed for OLTP, that is industry jargon for online transactional processing. A system designed for concurrent inserting and updating data in mostly relational databases. In my other blog posts I was playing around with SAP BW an OLAP, or online analytical processing system. In contrast to the OLTP an OLAP system is designed for complex queries to a huge number of records and mainly read access. OLTP systems are built for a balanced read/write access scenario to a small amount of data.&lt;/p&gt;
+
+&lt;p&gt;Certainly one of the best known solutions for an ERP is SAP’s S/4HANA. But for a small business or startup this might be prohibitively expensive. Enter the free and open source [FOSS] ERPs. There are several solutions out there, see &lt;a href=&quot;https://opensource.com/tools/enterprise-resource-planning&quot;&gt;here&lt;/a&gt; for an overview, but I am going to set up and play around with ERPNext today. Why? Because it has a pretty active community with ~416 contributors, 10.3k stars and 935 releases on &lt;a href=&quot;https://github.com/frappe/erpnext&quot;&gt;github&lt;/a&gt;. Also it is web based, i.e. accessible via the browser and built on python which I know and like.&lt;/p&gt;
+
+&lt;h1 id=&quot;benefits-of-an-erp-system&quot;&gt;Benefits of an ERP system&lt;/h1&gt;
+&lt;p&gt;An ERP system is a digital twin of all major company processes, or at least that’s what it should be. Theses processes depend on the company’s industry, e.g. a retailer does not have a plan-to-produce process since all products are procured. Often the most important processes are&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Order-to-cash, all the steps necessary from ordering of a product until the customer has paid the product&lt;/li&gt;
+  &lt;li&gt;Purchase-to-pay, all process steps from purchasing a product until its paid by the company&lt;/li&gt;
+  &lt;li&gt;Plan-to-produce, all the steps that manufacturing companies need to produce a product&lt;/li&gt;
+  &lt;li&gt;Financial Management, especially accounting, i.e. keeping track of all the monetary flows and assets between all the accounts of a company&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Now its not necessary to use an ERP software for all theses processes. One can certainly do with several specialized solutions e.g. for accounting or even with spreadsheets.
+The main benefit of such a software is that it integrates and consolidates all the information in one data model and hence serves as a consistence “source of truth”. Often theses systems come with template processes and data models to get you started quickly. The downside of all this is that customization is often expensive and hence at least for small companies the recommendation that I often read is to only customize the solution when absolutely necessary.&lt;/p&gt;
+
+&lt;h1 id=&quot;setting-up-erp-next&quot;&gt;Setting up ERP Next&lt;/h1&gt;
+&lt;p&gt;I will set up ERP Next on my local machine on a Ubuntu 20.04 VM. I will use the manual installation, there is also a dockerized solution, a easy install script and prebuilt VMs available. Also note that you can order ERPNext as Software as a Service from their &lt;a href=&quot;https://erpnext.com/&quot;&gt;homepage&lt;/a&gt;. The you will not have to bother about the set up at all.
+For the manual installation I follow the excellent guide &lt;a href=&quot;https://discuss.erpnext.com/t/tutorial-how-to-manually-install-erpnext-v13-11-production-on-debian-10-w-ssl-cert/81017&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;prerequisites-to-follow-along&quot;&gt;Prerequisites to follow along&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;A Hypervisor , e.g. Oracle’s &lt;a href=&quot;https://www.virtualbox.org/&quot;&gt;VirtualBox&lt;/a&gt;; for production on bare metal you could e.g. use &lt;a href=&quot;https://www.proxmox.com/en/proxmox-ve&quot;&gt;proxmox&lt;/a&gt;.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.vagrantup.com/&quot;&gt;Vagrant&lt;/a&gt; - not strictly necessary but who doesn’t like infrastructure as code&lt;/li&gt;
+  &lt;li&gt;Vagrant file, e.g. the one I created &lt;a href=&quot;https://gist.github.com/JaTat/1e1ad25066cc72e061d93298bdf67129&quot;&gt;here&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;setting-up-the-vm&quot;&gt;Setting up the VM&lt;/h2&gt;
+
+&lt;p&gt;Place the vagrant file in a suitable location. The file specifies the box, i.e. the OS image for the VM, defines names, the network and installs some dependencies of ERPNext. Lets have a closer look:&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# encoding: utf-8&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# Variable definition&lt;/span&gt;
+&lt;span class=&quot;no&quot;&gt;VAGRANT_BOX&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'generic/ubuntu2004'&lt;/span&gt;
+&lt;span class=&quot;no&quot;&gt;VM_NAME&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'ERPbox2'&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# VM User — 'vagrant' by default&lt;/span&gt;
+&lt;span class=&quot;no&quot;&gt;VM_USER&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'vagrant'&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# path of folder that should be synced, if any&lt;/span&gt;
+&lt;span class=&quot;no&quot;&gt;HOST_PATH&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'F:/virtualbox/ErpNext'&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# Where to sync to on Guest — 'vagrant' is the default user name&lt;/span&gt;
+&lt;span class=&quot;no&quot;&gt;GUEST_PATH&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'/mnt/erpnext'&lt;/span&gt;&lt;span class=&quot;c1&quot;&gt;# &lt;/span&gt;
+&lt;span class=&quot;no&quot;&gt;VM_PORT&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;8080&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Above I define some variables that will be used in the body of the script that invokes the VM. &lt;em&gt;VAGRANT_BOX&lt;/em&gt; is the name of the VM image from &lt;a href=&quot;https://app.vagrantup.com/boxes/search&quot;&gt;Vagrants image repository&lt;/a&gt;, &lt;em&gt;VM_PORT&lt;/em&gt; is the host port that I will map the VM port to. The &lt;em&gt;HOST_PATH&lt;/em&gt; is the path of the host directory that is mounted to the VM under &lt;em&gt;GUEST_PATH&lt;/em&gt;. Mounting a local directory is needed if you want to persist data even when destroying the VM. Per default vagrant mounts the Project Directory to &lt;em&gt;/home/vagrant&lt;/em&gt; which I disable below.&lt;/p&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;no&quot;&gt;Vagrant&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;configure&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;# Vagrant box from Hashicorp&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;vm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;box&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;VAGRANT_BOX&lt;/span&gt;
+  
+  &lt;span class=&quot;c1&quot;&gt;# Name of Machine&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;vm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;hostname&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;VM_NAME&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;# Set VM name in Virtualbox&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;vm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;provider&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;virtualbox&quot;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vb&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;vb&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;VM_NAME&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;vb&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;memory&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4096&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;vb&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;gui&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kp&quot;&gt;true&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;  
+
+  &lt;span class=&quot;c1&quot;&gt;# Port forwarding&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;vm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;network&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;forwarded_port&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;guest: &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;80&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;host: &lt;/span&gt;&lt;span class=&quot;no&quot;&gt;VM_PORT&lt;/span&gt;  
+  &lt;span class=&quot;c1&quot;&gt;# Sync folder&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;vm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;synced_folder&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;HOST_PATH&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;GUEST_PATH&lt;/span&gt;  
+  &lt;span class=&quot;c1&quot;&gt;# Disable default Vagrant folder, use a unique path per project&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;vm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;synced_folder&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'.'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'/home/'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;VM_USER&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;''&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;disabled: &lt;/span&gt;&lt;span class=&quot;kp&quot;&gt;true&lt;/span&gt;
+  &lt;span class=&quot;c1&quot;&gt;# install dependencies of ERPNext&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;vm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;provision&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;shell&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;ss&quot;&gt;inline: &lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;SHELL&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;
+    apt update
+    apt upgrade
+    apt install -y git curl
+    curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+    apt install -y nodejs mariadb-server redis-server python3-pip nginx python3-testresources python3-distutils python3-setuptools libssl-dev wkhtmltopdf
+
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;  SHELL&lt;/span&gt;
+
+  &lt;span class=&quot;n&quot;&gt;config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;vm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;provision&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;shell&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;ss&quot;&gt;path: &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;erpnext_provisioning.sh&quot;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The body of the script defines everything needed to provision the VM. The configuration is written in ruby and is hence very flexible. E.g. with a loop you can provision multiple VMs. The various configuration options can be found in the &lt;a href=&quot;https://www.vagrantup.com/docs/vagrantfile&quot;&gt;vagrant docs&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;In short: I tell vagrant to use virtualbox as provider and configure the name of the VM and allocate 4GB of memory to it. I set the gui to true, which opens the virtualbox console. This is handy if you have never worked before with the box and want to see what it does during startup. Some boxes require you to input something during installation which is hard to diagnose without the gui. I forward port 80 to the host port 8080, mount the local folder and finally install some dependencies of ERPnext.&lt;/p&gt;
+
+&lt;p&gt;In &lt;em&gt;config.vm.provision “shell”, inline: «-SHELL&lt;/em&gt; I use the shell inline &lt;a href=&quot;https://www.vagrantup.com/docs/provisioning/shell&quot;&gt;provisioner&lt;/a&gt; to execute tasks in the VM shell. Here I could also use ansible playbooks, something that I definitely want to explore.&lt;/p&gt;
+
+&lt;p&gt;First I update the VM with  &lt;em&gt;apt update&lt;/em&gt; and &lt;em&gt;upgrade&lt;/em&gt;, then I install curl and node.js from source in version 14. I also need:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;mariadb-server: The relational database ERPNext stores data in&lt;/li&gt;
+  &lt;li&gt;redis: in-memory Caching-layer&lt;/li&gt;
+  &lt;li&gt;nginx: Webserver&lt;/li&gt;
+  &lt;li&gt;libssl: Library for Transport Layer Security, not strictly needed here since I will not create certificates for my local play environment&lt;/li&gt;
+  &lt;li&gt;wkhtmltopdf: HTML to PDF converter&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Find the dependencies of the frappe framework also &lt;a href=&quot;https://frappeframework.com/docs/v13/user/en/installation&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;Just for fun I use a second way to execute shell commands by passing an external file. in &lt;em&gt;erpnext_provisioning.sh&lt;/em&gt; which is in the same folder, I create a new user and configure the mariadb:&lt;/p&gt;
+
+&lt;p&gt;Find the file also &lt;a href=&quot;https://gist.github.com/JaTat/4f7084a778ac1b1da74dc8b88779be00&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;#!/bin/bash
+# create ERP user
+adduser erpnext --gecos &quot;&quot; --disabled-password
+usermod -aG sudo erpnext
+
+# Append MYSQL Conf to file
+cat &amp;lt;&amp;lt;EOT &amp;gt;&amp;gt; /etc/mysql/my.cnf
+[mysqld]
+character-set-client-handshake = FALSE
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+[mysql]
+default-character-set = utf8mb4
+EOT
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;vagrant up
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;starts the VM. A virtualbox window should open where you can follow along the provisioning process if your host has graphical output.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;vagrant ssh
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The command above will attach a shell to the default VM, provide the name of the ERPnext VM with &lt;em&gt;vagrant ssh [name|id]&lt;/em&gt; if you have many VMs, you can get a list and the status of your VMs with &lt;em&gt;vagrant status&lt;/em&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;additional-work-after-vm-provisioning&quot;&gt;Additional work after VM provisioning&lt;/h2&gt;
+
+&lt;p&gt;I will do the remaining setup from within the VM. These steps can probably be automated in a script as well.&lt;/p&gt;
+
+&lt;p&gt;In the shell I make myself root and set a password for the ERPNext user:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;sudo su -
+passwd erpnext
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;from here on I basically follow the tutorial created by bkm in the ERPNext forum, &lt;a href=&quot;https://discuss.erpnext.com/t/tutorial-how-to-manually-install-erpnext-v13-11-production-on-debian-10-w-ssl-cert/81017&quot;&gt;here&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;restart the database:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;service mysql restart
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;set up the database:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;mysql_secure_installation
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Set root password? [Y/n]: y&lt;/li&gt;
+  &lt;li&gt;Remove anonymous users? [Y/n]: y&lt;/li&gt;
+  &lt;li&gt;Disallow root login -remotely? [Y/n]: n&lt;/li&gt;
+  &lt;li&gt;Remove test database and -access to it? [Y/n]: y&lt;/li&gt;
+  &lt;li&gt;Reload privilege tables -now? [Y/n]: y&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Login to mariadb:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;mysql -u root -p[your-password-here]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;and execute the following in the mysql CLI:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;USE mysql;
+UPDATE user SET plugin=' ' WHERE user = 'root';
+FLUSH PRIVILEGES;
+exit
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Change to the erpnext user:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;su erpnext -
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;and install yarn and frappe bench&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;sudo npm install -g yarn
+
+pip3 install frappe-bench
+export PATH=$PATH:/home/erpnext/.local/bin
+
+sudo pip3 install frappe-bench
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;setup bench for production, this will configure nginx and create the services needed to run automatically after restarting the VM&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;
+cd /mnt/erpnext
+
+bench init --frappe-branch version-13 frappe-bench
+
+cd frappe-bench
+
+bench new-site site1.local
+
+bench get-app --branch version-13 erpnext
+
+bench --site site1.local install-app erpnext
+
+sudo bench setup production [USER]
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;The I have to check whether the &lt;strong&gt;supervisor.conf&lt;/strong&gt; file was created in &lt;strong&gt;/etc/supervisor/conf.d&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;In my case it was not so I had to copy it from the frappe directory:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;sudo cp ~/frappe-bench/config/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;Now the last step is to enable the scheduler and reboot:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-Shell&quot;&gt;bench --site site1.local enable-scheduler
+sudo shutdown -r now
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h2 id=&quot;a-running-erp-instance&quot;&gt;A running ERP instance&lt;/h2&gt;
+
+&lt;p&gt;And finally a running ERP on localhost:8080:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/ERPNext/ERP.png&quot; alt=&quot;ERP on localhost:8080&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;next-steps&quot;&gt;Next steps&lt;/h2&gt;
+&lt;p&gt;Now the hard part is setting up and configuring the ERP from scratch. I certainly want to play around a little and setup some test processes. Stay tuned.&lt;/p&gt;</content><author><name>Jan Tatzel</name><email>jye9pyu5g@mozmail.com</email></author><summary type="html">Hey there! Imagine you have a small retail business and its the busy season of the year. You would probably like a system that keeps track of and helps to plan the goods on stock, your sales, no. of employees and their assignments, the expenses you have etc. This is what an ERP, Enterprise resource planning system does. It tracks and helps you plan your flow of goods, value, the usage of your capital etc.. Technically its a transactional system designed for OLTP, that is industry jargon for online transactional processing. A system designed for concurrent inserting and updating data in mostly relational databases. In my other blog posts I was playing around with SAP BW an OLAP, or online analytical processing system. In contrast to the OLTP an OLAP system is designed for complex queries to a huge number of records and mainly read access. OLTP systems are built for a balanced read/write access scenario to a small amount of data.</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://jantatzel.com/assets/img/blog/OData/social-media-5187243_1920.png" /><media:content medium="image" url="https://jantatzel.com/assets/img/blog/OData/social-media-5187243_1920.png" xmlns:media="http://search.yahoo.com/mrss/" /></entry><entry><title type="html">OData Services in SAP BW/4 from a HANA table</title><link href="https://jantatzel.com/2021-09-19-BWODataServices/" rel="alternate" type="text/html" title="OData Services in SAP BW/4 from a HANA table" /><published>2021-09-19T00:00:00+00:00</published><updated>2021-09-19T00:00:00+00:00</updated><id>https://jantatzel.com/BWODataServices</id><content type="html" xml:base="https://jantatzel.com/2021-09-19-BWODataServices/">&lt;p&gt;Hey there! Imagine you want to offer your carefully modelled data in your SAP BW to non-SAP tools. The BW4/HANA provides you three ways how to do this &lt;a href=&quot;https://help.sap.com/viewer/107a6e8a38b74ede94c833ca3b7b6f51/2.0.7/en-US/4a12e84976df1b42e10000000a42189c.html&quot;&gt;(SAP Reference)&lt;/a&gt;:&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;OpenHub - Replicate data from the BW by writing it to databases or files&lt;/li&gt;
+  &lt;li&gt;Via the HANA database itself by generating HANA views (For how to access the HANA from Python see my last blog, &lt;a href=&quot;https://jantatzel.com/2021-08-30-PythonToBW/&quot;&gt;link&lt;/a&gt;)&lt;/li&gt;
+  &lt;li&gt;Via OData APIs&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Today I am exploring the OData Services in my SAP BW4/HANA 2.0. There are two ways to expose an OData service.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;An OData service directly from the HANA Database using the SAP HANA XS application server. This is not restricted to the BW application but can be done from any HANA database with the XS application server.&lt;/li&gt;
+  &lt;li&gt;From the BW:
+    &lt;ul&gt;
+      &lt;li&gt;Using the Operational Data Provisioning Framework (ODP)&lt;/li&gt;
+      &lt;li&gt;Using Easy Queries 
+Using OData as a communication protocol for ODP is meant for similar use cases as the OpenHub functionality. It offers the full range of functionality of ODP such as direct data access, operational delta queue, and delta extraction with initial full load.&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;I will build my service directly from the HANA database using the SAP HANA platform services.&lt;/p&gt;
+
+&lt;h1 id=&quot;what-is-odata&quot;&gt;What is OData&lt;/h1&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.OData.org/&quot;&gt;OData&lt;/a&gt; is Microsoft’s attempt on a Protocol that basically allows SQL operations such as filtered selects and joins via http(s):&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;It is built on REST standards&lt;/li&gt;
+  &lt;li&gt;It is currently in its 4th iteration.&lt;/li&gt;
+  &lt;li&gt;It is maintained by a non-profit organization called &lt;a href=&quot;https://en.wikipedia.org/wiki/OASIS_(organization)&quot;&gt;OASIS&lt;/a&gt;.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;With an OData API the client can specify exactly which part of a resource it wants. This makes a lot of sense if the resource is a structured entity such as a table or a data object with multiple fields. Then the client can use methods similar to SQL statements such as selecting certain columns, filtering, ordering, even joining of two entities is possible. This means the client does not overfetch data, i.e. receives more than it wanted, and probably can chew. It also prevents underfetching, resulting in many API calls to the backend by the client.&lt;/p&gt;
+&lt;h2 id=&quot;rest&quot;&gt;REST&lt;/h2&gt;
+
+&lt;p&gt;Since OData claims to follow the REST guidelines, which is an abbreviation of Representational State Transfer,  it is fair to expect some things. REST is the de facto architecture style for developing APIs for Web applications. This is because the REST guidelines were developed to solve a lot of challenges of the internet, i.e. for a complex client server systems with potentially multiple layers of proxies and reverse proxies in between and any number of protocols. REST was developed in the context of hypermedia systems, these are rich information systems meant for non-linear consumption. There is no official REST standard but in general APIs are said to be RESTful if they satisfy the following non functional requirements:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Client–server architecture: Separating the UI from data storage, retrieval and preparation for messaging/ UI consumption e.g. serializing into a set representation that can be interpreted by the widest number of clients&lt;/li&gt;
+  &lt;li&gt;Statelessness: The server responding to a request needs no information about the session. Each request can be fulfilled in insolation and after the request has been fulfilled, i.e. the packet has been sent the server can forget the request.&lt;/li&gt;
+  &lt;li&gt;Cacheability: Since REST assumes many layers between the client and the server, caching, i.e. storing information temporarily in another layer than the responding server, can severely increase response times. To prevent data staleness responses have to be explicit about their cacheability.&lt;/li&gt;
+  &lt;li&gt;Code on demand: Servers can extend or customize the functionality of a client by transferring executable code, e.g. with JavaScript&lt;/li&gt;
+  &lt;li&gt;Uniform interface: Decoupling is achieved by separating the resource from the representation, i.e. how data is represented can differ from how data is stored on the server; the representation sent to the client, including all metadata has to be enough for the client to transform the received representation, self descriptive messages including information to describe how to process the message and finally &lt;strong&gt;discoverability&lt;/strong&gt; of resources, a client should be able to discover all available resources from an initial URI&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;adoption&quot;&gt;Adoption&lt;/h2&gt;
+
+&lt;p&gt;In the Microsoft and SAP system OData is available in many products such as Microsoft 365 (Office, Teams, …) via Microsoft Graph &lt;a href=&quot;https://developer.microsoft.com/en-us/graph/graph-explorer&quot;&gt;Graph Explorer&lt;/a&gt;, several other products such as Azure DevOps and PowerBI.&lt;/p&gt;
+
+&lt;p&gt;OData is used by SAP to serve data to its Fiori Web Apps. This means you can find it in the entire Business Suite.&lt;/p&gt;
+
+&lt;p&gt;Besides these two heavy weights adoption seems limited. Netflix provided access to its video catalogs with an OData Api but discontinued it in 2013 , so did eBay (&lt;a href=&quot;https://www.ben-morris.com/netflix-has-abandoned-OData-does-the-standard-have-a-future-without-an-ecosystem/&quot;&gt;Source&lt;/a&gt;).&lt;/p&gt;
+
+&lt;h2 id=&quot;alternatives&quot;&gt;Alternatives&lt;/h2&gt;
+
+&lt;p&gt;As always in the world of tech there are alternatives available. Facebook promotes an API standard called &lt;a href=&quot;https://graphql.org/&quot;&gt;GraphQL&lt;/a&gt; for similar tasks (for a discussion see &lt;a href=&quot;https://jeffhandley.com/2018-09-13/graphql-is-not-OData&quot;&gt;here&lt;/a&gt; ) and Oracle has something called &lt;a href=&quot;https://www.oracle.com/database/technologies/appdev/rest.html&quot;&gt;ORDS - Oracle Rest data services&lt;/a&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;activating-an-odata-service-for-a-single-hana-table&quot;&gt;Activating an OData Service for a single HANA Table&lt;/h1&gt;
+
+&lt;p&gt;As always I prefer exploring over huge upfront research. And as with my other blog posts I came to a point where I had to do a fair bit of research. My main challenges were authorization and no clear understanding of the various components of the BW/4 and HANA platform. Again the following are notes of my explorations annotated with later learnings.&lt;/p&gt;
+
+&lt;h2 id=&quot;creating-a-odata-service-in-hana-modelling-tools&quot;&gt;Creating a OData service in HANA modelling tools&lt;/h2&gt;
+
+&lt;p&gt;I start in the HANA modelling tools since this is also the IDE for the BW system. The later me will learn that there is another way using something called the Web IDE and a completely different set of Web development services but oh well for now I use what I know.&lt;/p&gt;
+
+&lt;p&gt;I create a new repository package, OData, in the eclipse HANA development perspective under my Tenant DB:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/OData/CreateRepository.png&quot; alt=&quot;Repo&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Following &lt;a href=&quot;https://blogs.sap.com/2018/07/02/how-to-expose-a-hana-table-via-OData/&quot;&gt;this&lt;/a&gt; Blogpost I now have to create a number of files:&lt;/p&gt;
+
+&lt;p&gt;They are all created similarly by right clicking the package, New, Other and choosing the correct wizard.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/OData/CreateArtifacts.png&quot; alt=&quot;Repo&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;xssqlcc---anonymous-sql-access-configuration&quot;&gt;.xssqlcc - Anonymous SQL Access Configuration&lt;/h2&gt;
+&lt;p&gt;This is the configuration file for the sql connection.&lt;/p&gt;
+
+&lt;p&gt;Current me: Following the blog I changed the filename to &lt;em&gt;ANONUSER&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;I double clicked on the file and added &lt;em&gt;{ “description” : “Anonymous SQL connection” }&lt;/em&gt;. The I activated the file with Ctrl+F3.&lt;/p&gt;
+
+&lt;p&gt;I got an error during activation and had to apply a quick fix by right clicking on the error message in the eclipse console and change the file encoding.&lt;/p&gt;
+
+&lt;p&gt;Later me: Quote from the &lt;a href=&quot;https://help.sap.com/viewer/b3d0daf2a98e49ada00bf31b7ca7a42e/2.0.03/en-US/0d2aa67a44a94b14ae80dc883a4c6419.html&quot;&gt;SAP help&lt;/a&gt;:
+&lt;em&gt;In SAP HANA Extended Application Services (SAP HANA XS), you use the SQL-connection configuration file to configure a connection to the database; the connection enables the execution of SQL statements from inside a server-side JavaScript application with credentials that are different to the credentials of the requesting user.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;The structure of the file is simple. It contains a the description and potentially a mapping to a role configuration. The file can only be accessed from within the package and is referenced with &lt;em&gt;package::filename&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;xsaccess---access-authorization&quot;&gt;.xsaccess - Access authorization&lt;/h2&gt;
+
+&lt;p&gt;Next up I use the same steps as above to create a .xsaccess file. This file defines the authorization settings and also has additional parameters such as cache_control etc.&lt;/p&gt;
+
+&lt;p&gt;Quoting from the SAP Help &lt;a href=&quot;https://help.sap.com/viewer/400066065a1b46cf91df0ab436404ddc/2.0.02/en-US/5fe3b123826d4503aa66eb955a002821.html&quot;&gt;Link&lt;/a&gt;: &lt;em&gt;The application-access file enables you to specify who or what is authorized to access the content exposed by a SAP HANA XS application package and what content they are allowed to see. For example, you use the application-access file to specify if authentication is to be used to check access to package content and if rewrite rules are in place that hide or expose target and source URLs.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;The file has no name and is formatted in json. Parameters can also be obtained from the SAP help&lt;/p&gt;
+
+&lt;p&gt;The &lt;em&gt;anonymous_connection”&lt;/em&gt; line ties back to the file we created above, where OData is the package and anonuser the file.&lt;/p&gt;
+
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+	&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;exposed&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; 
+	&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;authentication&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+
+	&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;mime_mapping&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+		&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;extension&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;jpg&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+		&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;mimetype&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;image/jpeg&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+	&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+	&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;prevent_xsrf&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+	&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;force_ssl&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+	&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;enable_etags&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+	&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;anonymous_connection&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;OData::anonuser&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+	&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;cors&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+		&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;enabled&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+		&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;allowMethods&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;GET&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+		&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;allowOrigin&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;*&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+	&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+	&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;allowHeaders&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+		&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Accept&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+		&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Authorization&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+		&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Content-Type&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+		&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;X-CSRF-Token&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+		&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Access-Control-Allow-Origin&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+	&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+	&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;exposeHeaders&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+		&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;x-csrf-token&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+	&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+	&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;cache_control&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;no-cache, no-store&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Parameters:&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;cors&lt;/em&gt;: I only allow &lt;strong&gt;read&lt;/strong&gt; access from domains other than the domain of my XS HANA application server. I could further narrow down the allowed domains by “allowOrigin” e.g. to the domain of a WebApp that is supposed to query the data from my HANA.&lt;/p&gt;
+
+&lt;p&gt;Note: &lt;em&gt;prevent_xsrf&lt;/em&gt;, &lt;em&gt;force_ssl&lt;/em&gt; and &lt;em&gt;authentication&lt;/em&gt; are  important security features and should be used in production.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;em&gt;prevent_xsrf&lt;/em&gt;  checks for a valid security token of the client vs. the generated token of the HANA XS Server. It helps to prevent cross-site request-forgery (XSRF) attacks. In these attacks a user is tricked on clicking on a hyperlink to a Website that performs actions on the users behalf.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;em&gt;force_ssl&lt;/em&gt; rejects requests via HTTP and thereby ensure the encryption of all data sent.&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;em&gt;authentication&lt;/em&gt; must be set to &lt;em&gt;method: Form&lt;/em&gt; according to the documentation to redirect any user requests to a login page.&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;These options require additional configuration as detailed &lt;a href=&quot;https://help.sap.com/viewer/400066065a1b46cf91df0ab436404ddc/2.0.02/en-US/a9fc5c220d744180850996e2f5d34d6c.html&quot;&gt;in the SAP Help&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;xsapp---application-description&quot;&gt;.xsapp - Application Description&lt;/h3&gt;
+&lt;p&gt;Next up is the .xsapp file. I create the file .xsapp and add curly brackets:&lt;/p&gt;
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;Later me:
+The purpose of the file is &lt;em&gt;The application descriptor is the core file that you use to indicate an application’s availability within SAP HANA XS. The application descriptor marks the point in the package hierarchy at which an application’s content is available to clients. The application-descriptor file has no contents and no name; it only has the file extension .xsapp. The package that contains the application-descriptor file becomes the root path of the resources exposed by the application you develop.&lt;/em&gt; &lt;a href=&quot;https://help.sap.com/viewer/400066065a1b46cf91df0ab436404ddc/2.0.02/en-US/0549991ea9984835b8c06c12123b7fe2.html&quot;&gt;Source&lt;/a&gt; Since it defines the root it also defines the root URL where your application will be reachable. In my case this will therefore be &lt;em&gt;&amp;lt;host&amp;gt;:&amp;lt;port&amp;gt;/OData/&lt;/em&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;xsodata---odata-service-specification&quot;&gt;.xsOData - OData Service Specification&lt;/h3&gt;
+
+&lt;p&gt;Now I need the actual OData description. I do this by adding the .xsOData file and specifying which table(s) I want to expose as service.&lt;/p&gt;
+
+&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;err&quot;&gt;service&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;SAPHANADB&quot;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;RSDIOBJT&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;err&quot;&gt;as&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;IOBJT&quot;&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;em&gt;IOBJT&lt;/em&gt; is the alias for the table name in the OData service.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Tip: I use the auto code completion in the SQL editor (ctrl + space) to get the “SCHEMA”.”TABLE” specification.&lt;/p&gt;
+
+&lt;h2 id=&quot;run-odata-service&quot;&gt;Run OData Service&lt;/h2&gt;
+
+&lt;p&gt;A right click in the text editor of the .xsOData file, opens the context menu. Here I click on Run As 1 XS Service.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/OData/Run.png&quot; alt=&quot;Run As&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The default browser opens with the URL 
+https://&amp;lt;Hostname&amp;gt;:43&amp;lt;InstanceNumber&amp;gt;//OData/&amp;lt;Alias&amp;gt;.xsOData/&lt;/p&gt;
+
+&lt;p&gt;In my SAP CAL instance this results in the following URL:&lt;/p&gt;
+
+&lt;p&gt;https://vhcalhdbdb:4302//OData/BWIobjt.xsOData/&lt;/p&gt;
+
+&lt;p&gt;But bummer I get a 403 error which tells me that I have an authorization issue.&lt;/p&gt;
+
+&lt;h2 id=&quot;a-lot-of-trial-and-error-to-solve-the-authorization-issue&quot;&gt;A lot of trial and error to solve the authorization issue&lt;/h2&gt;
+
+&lt;p&gt;Adding a Database user to an OData service can generally be done with the XS Admin Tool. In my CAL system I can access it via https://vhcalhdbdb:4302/sap/HANA/xs/admin/#/. But which is the right user to login to the admin tool?&lt;/p&gt;
+
+&lt;h3 id=&quot;accessing-the-hana-xs-admin-tool&quot;&gt;Accessing the HANA XS Admin Tool&lt;/h3&gt;
+
+&lt;p&gt;In the logon screen I try all my configured users but none works. A quick google search for how to maintain the XS users tells me that there is a Command Line tool on the Application server named &lt;em&gt;xs&lt;/em&gt;, see the &lt;a href=&quot;https://help.sap.com/viewer/4505d0bdaf4948449b7f7379d24d0f0d/2.0.03/en-US/addd59069e6f444ca6ccc064d131feec.html&quot;&gt;SAP Help&lt;/a&gt; for the reference. I logon via putty to my application server but cannot locate the xs executable. I locate a configuration file named xsconfig via a find -name “&lt;em&gt;xs&lt;/em&gt;” and it reveals that &lt;em&gt;XSA_ADMIN&lt;/em&gt; is the user.&lt;/p&gt;
+
+&lt;p&gt;Later me:
+Little did I know that there is a completely separate web development stack called XS&lt;strong&gt;A&lt;/strong&gt; available and activated in my SAP CAL BW/4.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/OData/xsconfig.png&quot; alt=&quot;Application Server xsconfig&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Trying to login with the XSA_ADMIN user results in the same problem: 403. Okay so back to square 1 and some more googling.&lt;/p&gt;
+
+&lt;h3 id=&quot;access-with-the-system-user&quot;&gt;Access with the system user&lt;/h3&gt;
+
+&lt;p&gt;I try again all other users and note that with the system user I get a not authorized instead of wrong credentials. So I guess I have to grant additional rights to the SYSTEM user.&lt;/p&gt;
+
+&lt;p&gt;In my Tenant Database configuration in the HANA modelling tools, I grant all xs related roles to the System user by navigating to Security –&amp;gt; Users –&amp;gt; System and clicking on add roles.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/OData/Grant.png&quot; alt=&quot;Grant all xs roles&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Most likely the WebDispatcherAdmin Role Should be enough since &lt;em&gt;The role sap.HANA.xs.wdisp.admin::WebDispatcherAdmin enables full access to the SAP HANA Web Dispatcher Administration tool, which the administrator uses to maintain secure inbound communication, for example, to enable SSL/TLS connections between an ABAP system and an SAP HANA XS application.&lt;/em&gt; according to the &lt;a href=&quot;https://help.sap.com/viewer/6b94445c94ae495c83a19646e7c3fd56/2.0.02/en-US/9fdfbe396db9496c993779db91df01aa.html&quot;&gt;Reference&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;I try to login again but receive the same 403 error. Weird….&lt;/p&gt;
+
+&lt;p&gt;After a coffee I have an idea, what if the Admin tool tries to login to the System database?&lt;/p&gt;
+
+&lt;p&gt;I grant the System user all xs related rights on the system database as above and finally I can login. But now I only see the services exposed on the system database and not the OData service created before. So again back to square 1 and of course more research.&lt;/p&gt;
+
+&lt;h3 id=&quot;enable-the-tenant-database&quot;&gt;Enable the tenant database.&lt;/h3&gt;
+
+&lt;p&gt;Later me: I believe what follows is a complete detour. I have been using the now deprecated HANA XS service so far. What follows now is how I discover the HANA XS&lt;strong&gt;A&lt;/strong&gt; service. The actual solution is&lt;/p&gt;
+
+&lt;p&gt;I find out that one has to enable a Tenant database either with the Command Line Tools as described &lt;a href=&quot;https://help.sap.com/viewer/6b94445c94ae495c83a19646e7c3fd56/2.0.04/en-US/946072aa37274912aa7f858151dd5e65.html&quot;&gt;here&lt;/a&gt; or the XS HANA ADVANCED Cockpit a Web Application that in my case is located here:
+https://vhcalhdbdb.dummy.nodomain:51024/cockpit#/xsa/overview&lt;/p&gt;
+
+&lt;p&gt;Here I note that my Tenant is not enabled (the green enabled label in enabled for XSA was missing) and I enable it under Actions –&amp;gt; Enable by entering the user credentials of my Tenant and System database user.&lt;/p&gt;
+
+&lt;p&gt;Since I am already here, I create a new Org under Organizations on the left and map the Tenant Database to the Org (JanOrg) again under Actions.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/OData/MapTenant.png&quot; alt=&quot;Enable Tenant&quot; /&gt;
+Unfortunately in the XS Admin Tool I still see the System database services.&lt;/p&gt;
+
+&lt;h3 id=&quot;editing-the-xsengineini&quot;&gt;Editing the xsengine.ini&lt;/h3&gt;
+
+&lt;p&gt;This blog post &lt;a href=&quot;https://answers.sap.com/questions/13133354/how-to-access-sap-HANA-20-tenant-database-xs-admin.html&quot;&gt;here&lt;/a&gt; gave me the idea that I have to alter my xsengine.ini configuration file in order for the admin tools to be able to access the tenant database. This is described in more detail in the &lt;a href=&quot;https://help.sap.com/viewer/78209c1d3a9b41cd8624338e42a12bf6/1.0.12/en-US/af24ce38929b4f1fa934a28147fc7641.html&quot;&gt;SAP Help&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;I have to open the administration editor of in the System tab of the HANA Development Perspective and choose the configuration tab. I do this in the context of my tenant database.&lt;/p&gt;
+
+&lt;p&gt;There I find the xsengine.ini with the following settings under publicurl:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/OData/xsengineini.png&quot; alt=&quot;xsengine configuration&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Instead of adding new public URLs I double click the entry and add database A4H which was empty before. Now a green icon in the column database indicates that the database is connected:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/OData/green.png&quot; alt=&quot;Green light&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;As described in the SAP help I run:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-SQL&quot;&gt;
+ALTER SYSTEM ALTER CONFIGURATION ('xsengine.ini', 'database', '&amp;lt;tenant_DB_name&amp;gt;') SET ('public_urls', 'http_url') = 'http://&amp;lt;virtual_hostname&amp;gt;:80&amp;lt;instance&amp;gt;' WITH RECONFIGURE;
+
+ALTER SYSTEM ALTER CONFIGURATION ('xsengine.ini', 'database', '&amp;lt;tenant_DB_name&amp;gt;) SET ('public_urls', 'https_url') = 'https://&amp;lt;virtual_hostname&amp;gt;:43&amp;lt;instance&amp;gt;' WITH RECONFIGURE;
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;with&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Tenant Database: A4H&lt;/li&gt;
+  &lt;li&gt;Virtual_hostname: vhcalhdbdb&lt;/li&gt;
+  &lt;li&gt;instance: 02&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I run this Query in the system database and the tenant database since its not specified in the reference. In the tenant database I get an error telling me that I do not have to specify the tenant database name, so I exclude &amp;lt;tenant_DB_name&amp;gt; from the query.&lt;/p&gt;
+
+&lt;h2 id=&quot;configure-the-sql-user-in-the-xs-admin-tool&quot;&gt;Configure the SQL user in the XS ADMIn Tool&lt;/h2&gt;
+
+&lt;p&gt;Finally I see my OData Service in the XS Admin tool. I can configure the Database user with a click on edit. I add the SAPHANADB user to the anonymous SQl connection.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/OData/ODataXS.png&quot; alt=&quot;Finally the db user for the OData Service can be configured&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;accessing-the-odata-service&quot;&gt;Accessing the OData service&lt;/h2&gt;
+
+&lt;p&gt;In the browser I can now access the OData service under:&lt;/p&gt;
+
+&lt;p&gt;https://vhcalhdbdb:4302//OData/BWIobjt.xsOData/&lt;/p&gt;
+
+&lt;p&gt;and the metadata of the service under&lt;/p&gt;
+
+&lt;p&gt;https://vhcalhdbdb:4302//OData/BWIobjt.xsOData/$metadata&lt;/p&gt;
+
+&lt;p&gt;So finally I can query all InfoObject descriptions in my BW/4 with a get request to https://vhcalhdbdb:4302//OData/BWIobjt.xsOData/IOBJT?$filter=LANGU%20eq%20%27E%27&lt;/p&gt;
+
+&lt;p&gt;This returns English descriptions as xml:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/OData/ODataQuery.png&quot; alt=&quot;Get Data&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion:&lt;/h2&gt;
+
+&lt;p&gt;It was again a bit harder than I thought. Getting the OData service to work involved a lot of trial and error and googling. Although with a properly set up system creating an OData service can be very fast since it only involves the steps described under Activating an OData Service for a single HANA Table.&lt;/p&gt;
+
+&lt;h2 id=&quot;note-from-future-me&quot;&gt;Note from future me:&lt;/h2&gt;
+
+&lt;p&gt;SAP HANA XS, extended application services, are deprecated as of SAP HANA 2.0 SPS02. Currently we are at SPS 05. The services were superseded by HANA XSA the 
+&lt;strong&gt;advanced&lt;/strong&gt; application services. This is a set of tools to allow Web applications natively on HANA. XSA uses cloud foundry to allow microservice style, containerized web services and comes with a full stack of development tools, such as a Web IDE. The administration cockpit I discovered above is part of the stack. Apparently the integration of XSA with SAP BW/4 is still a bit patchy. For example HANA containers spawned by XSA are not aware of schemas defined in BW/4, see &lt;a href=&quot;https://blogs.sap.com/2020/02/21/bw-4-hana-mixed-scenarios-with-native-hana-hdi-containers/&quot;&gt;this&lt;/a&gt; blog post. See &lt;a href=&quot;https://blogs.sap.com/2017/09/04/xs-advanced-for-not-so-dummies/&quot;&gt;here&lt;/a&gt; for an introduction to XSA. XSA sounds cool so I plan to have a look at it in the near future.
+——–&lt;/p&gt;
+
+&lt;h6 id=&quot;the-screenshots-are-my-own-the-header-picture-is-a-license-free-picture-from-pixabay&quot;&gt;The screenshots are my own, the header picture is a license free picture from pixabay&lt;/h6&gt;</content><author><name>Jan Tatzel</name><email>jye9pyu5g@mozmail.com</email></author><summary type="html">Hey there! Imagine you want to offer your carefully modelled data in your SAP BW to non-SAP tools. The BW4/HANA provides you three ways how to do this (SAP Reference): OpenHub - Replicate data from the BW by writing it to databases or files Via the HANA database itself by generating HANA views (For how to access the HANA from Python see my last blog, link) Via OData APIs</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://jantatzel.com/assets/img/blog/OData/social-media-5187243_1920.png" /><media:content medium="image" url="https://jantatzel.com/assets/img/blog/OData/social-media-5187243_1920.png" xmlns:media="http://search.yahoo.com/mrss/" /></entry><entry><title type="html">Analyzing the BW data dictionary in Python</title><link href="https://jantatzel.com/2021-08-30-PythonToBW/" rel="alternate" type="text/html" title="Analyzing the BW data dictionary in Python" /><published>2021-08-30T00:00:00+00:00</published><updated>2021-08-30T00:00:00+00:00</updated><id>https://jantatzel.com/PythonToBW</id><content type="html" xml:base="https://jantatzel.com/2021-08-30-PythonToBW/">&lt;p&gt;Hey there!
+Although I haven’t written about it, I continued my learning journey in my self hosted BW/4 system. In this post I will connect my favorite Data Science tool, Python, with BW/4’s underlying database HANA. I will read out the metadata describing the data objects I have created and quickly visualize them to show you my progress. This can come in handy when we want to analyze the data model in our BW/4 platform e.g. the re-usage of InfoObjects, i.e. MasterData.&lt;/p&gt;
+
+&lt;h2 id=&quot;how-to-connect-python-to-hana&quot;&gt;How to connect Python to Hana&lt;/h2&gt;
+
+&lt;p&gt;To connect to the Hana database and query data you will need the &lt;a href=&quot;https://pypi.org/project/hdbcli/&quot;&gt;hdblci&lt;/a&gt; package. It follows the known DBAPI standards in python. Often BW/4 systems will have more than one tenant available on separate ports. To find out the correct port instead of trying them all out you can query SYS.M_SERVICES View from your tenant database. See my first post on how to do this with the hdbsql command line interface or simply use eclipse.&lt;/p&gt;
+
+&lt;p&gt;For my sap cloud appliance installation 30241 was the correct result. I could have also gotten this form the SAP Cloud Appliance Web Console.
+&lt;img src=&quot;/assets/img/blog/PyBW1/MSERVICESQuery.png&quot; alt=&quot;M_Services Result&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;With the following python code you can connect to the database. Note that I use a .env file to hide my username and password. Of course it would also be possible to assign the username and password directly. The address is dynamic, since this makes hosting a bit cheaper, and hence has to be changed after each suspension.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;hdbcli&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dbapi&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;dotenv&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;load_dotenv&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;os&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;pandas&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pd&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;load_dotenv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;.env&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# find correct port using MSERVICE query
+# 
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;conn&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dbapi&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;connect&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'23.100.7.181'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;port&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;30241&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;#
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;getenv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;USERNAME&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;password&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;os&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;getenv&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;PASSWORD&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;database&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'HDB'&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;cursor&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;conn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cursor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;Connect to the HANA database&lt;/p&gt;
+
+&lt;h2 id=&quot;querying-the-internal-data-dictionary-tables&quot;&gt;Querying the internal data dictionary tables&lt;/h2&gt;
+
+&lt;p&gt;I want to query all Advanced Data Storage objects, the main data persistency object in BW/4, and InfoObjects, the characteristics or dimensions; their relation and describing texts.&lt;/p&gt;
+
+&lt;p&gt;Therefore I need the following tables:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;rsdiobj: Directory of InfoObjects&lt;/li&gt;
+  &lt;li&gt;rsdiobjt: Describing texts of InfoObjects&lt;/li&gt;
+  &lt;li&gt;rsoadso: Directory of ADSOs&lt;/li&gt;
+  &lt;li&gt;rsoadsot: Describing texts of ADSOs&lt;/li&gt;
+  &lt;li&gt;rsoobjxref: Directory of ADSOs&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;An overview of important internal BW/4 tables is provided for example by &lt;a href=&quot;https://sap4tech.net/most-important-sap-bw-tables/&quot;&gt;sap4tech&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;I restrict the select of rsoobjxref to Objects of type adso &lt;em&gt;TLOGO = ‘ADSO’&lt;/em&gt; and only query active objects and texts in English &lt;em&gt;OBJVERS=’A’ AND LANGU = ‘EN’&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;Then the query looks for example follows. The python f-string notation provides a neat way to write dynamic queries. &lt;em&gt;df.head&lt;/em&gt; returns the first five rows of the query.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;table&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'RSOOBJXREF'&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;tlogo&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'ADSO'&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;objvers&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'A'&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;query&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;SELECT * FROM &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;table&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt; WHERE TLOGO = '&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tlogo&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;' AND OBJVERS = '&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;objvers&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;' &quot;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read_sql_query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;conn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;head&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The resulting data frame has in my instance 1488 rows and looks as follows:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/PyBW1/dfhead.png&quot; alt=&quot;M_Services Result&quot; /&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;TLOGO is the object type of the independent object, it only contains ADSO&lt;/li&gt;
+  &lt;li&gt;OBJVERS is the version of the object, I restricted it to &lt;em&gt;A&lt;/em&gt; for active&lt;/li&gt;
+  &lt;li&gt;OBJNM is the name of the ADSO&lt;/li&gt;
+  &lt;li&gt;TLOGO_DEP is the object type of the dependent object&lt;/li&gt;
+  &lt;li&gt;OBJNM_DEP is the name of the dependent object&lt;/li&gt;
+  &lt;li&gt;ASC_TYPE is the association type according to &lt;a href=&quot;https://www.se80.co.uk/saptables/r/rsoo/rsoobjxref.htm&quot;&gt;SE80.co.uk&lt;/a&gt;, not quite sure what it means but all values are ‘002’ in my case&lt;/li&gt;
+  &lt;li&gt;SUBTYPE is a Subtype of TLOGO type and contains no values&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Besides InfoObjects, I also have areas as dependent objects, since I am only interested in InfoObjects for the moment I filter on &lt;em&gt;IOBJ&lt;/em&gt;. I created all my InfoObjects in the Z namespace meaning the first character of the OBJN_DEP is Z. I am not interested in the SAP BW BI content which is shipped with the BW/4, hence I also filter for the Z namespace. 
+I can use the returned object names to only query the descriptions I need.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;#Filter on InfoObjects and namespace Z
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;TLOGO_DEP&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;IOBJ&quot;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;OBJNM_DEP&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;==&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Z&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# get names of filtered InfoObjects from data frame above as string
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c_iobj&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;str&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;tuple&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;OBJNM_DEP&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;].&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tolist&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()))&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#filter by language = E (internal 1 char code for english)
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;langu&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'E'&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#construct query
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;query&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;sa&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;SELECT * FROM RSDIOBJT WHERE IOBJNM IN &lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c_iobj&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt; AND LANGU = '&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;langu&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;' AND OBJVERS = '&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;objvers&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'&quot;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;df_iobjt&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pd&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read_sql_query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;conn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#join the short description column using the the dependent object name in df and the IOBJNM in df_iobjt
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;merge&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;df_iobjt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[:,(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;IOBJNM&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;TXTSH&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;left_on&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;OBJNM_DEP&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;right_on&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;IOBJNM&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;how&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;left&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;This results in all the InfoObjects and the two ADSOs I have created
+&lt;img src=&quot;/assets/img/blog/PyBW1/ResultingFrame.png&quot; alt=&quot;InfoObjects and ADSOs&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Now I visualize the data frame as a network graph. This will make it really easy to see which Dimensions are related to which persistency objects. This can be very helpful e.g. when you want to analyze the re-use of data and find patterns within your platform.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;networkx&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nx&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;matplotlib&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pyplot&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#initialize grap
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;G&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Graph&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;G&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;from_pandas_edgelist&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;df&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'OBJNM'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'TXTSH'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;#draw graph
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;plt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;figure&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;figsize&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;8&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;nx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;draw_circular&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;G&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;with_labels&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+&lt;span class=&quot;n&quot;&gt;node_color&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;red&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;green&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;green&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;green&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;green&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;green&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;red&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;node_size&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;600&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;600&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;600&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;600&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;600&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;We see that all InfoObjects (in green) are used in both of the ADSOs (red).&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/img/blog/PyBW1/graph.png&quot; alt=&quot;InfoObjects and ADSOs&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Querying the internal data dictionary tables can help to understand the structure of the BW/4. These tables can be used to highlight relations and analyze how much data is reused. They can also be used to surface information for users without backend access. This can be done e.g. by building a data catalog showing the relations between objects and even their lineage. In my minimal example the results where not that surprising but on huge production systems they can tell you a lot about how integrated your data warehouse actually is.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h6 id=&quot;the-screenshots-are-my-own-the-header-picture-is-a-license-free-picture-from-pixabay&quot;&gt;The screenshots are my own, the header picture is a license free picture from pixabay&lt;/h6&gt;</content><author><name>Jan Tatzel</name><email>jye9pyu5g@mozmail.com</email></author><summary type="html">Hey there! Although I haven’t written about it, I continued my learning journey in my self hosted BW/4 system. In this post I will connect my favorite Data Science tool, Python, with BW/4’s underlying database HANA. I will read out the metadata describing the data objects I have created and quickly visualize them to show you my progress. This can come in handy when we want to analyze the data model in our BW/4 platform e.g. the re-usage of InfoObjects, i.e. MasterData.</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://jantatzel.com/assets/img/blog/PyBW1/network-1246209_1920.jpg" /><media:content medium="image" url="https://jantatzel.com/assets/img/blog/PyBW1/network-1246209_1920.jpg" xmlns:media="http://search.yahoo.com/mrss/" /></entry><entry><title type="html">Learning SAP BW/4HANA</title><link href="https://jantatzel.com/2021-01-31-BWInADay/" rel="alternate" type="text/html" title="Learning SAP BW/4HANA" /><published>2021-01-31T00:00:00+00:00</published><updated>2021-01-31T00:00:00+00:00</updated><id>https://jantatzel.com/BWInADay</id><content type="html" xml:base="https://jantatzel.com/2021-01-31-BWInADay/">&lt;p&gt;Hey there!
+I attempt to learn SAP BW/4 in a day. As with any tool my preferred way of learning is hands-on. So I will set up a BW/4 and model some data objects. This is not necessarily meant as a tutorial to follow along. I will certainly make mistakes and meet some dead ends. Anyways I am sure it will be fun! So follow me along on my attempt to learn BW in a day.&lt;/p&gt;
+
+&lt;h2 id=&quot;what-is-bw4&quot;&gt;What is BW/4?&lt;/h2&gt;
+
+&lt;p&gt;SAP BW/4HANA is often used as a corporate analytical Data Warehouse. The BW application has matured since 1998. It comes with its own vocabulary, learning ressources and legions of experts. 
+BW/4 is SAP’s packaged Business Warehouse application running on SAP’s proprietary in-memory HANA database. HANA offers the option to store tables column- or row-wise. Column-wise is preferred for OLAP since it speeds up filtering and aggregations. BW is more than a database it is a whole Data Management solution. It is built on SAP’s proprietary technology stack SAP Netweaver which in turn is built mainly on SAP’s own programming language ABAP. Why would you opt for so much proprietary stuff? Apparently, every other setup makes retrieving data from SAP’s ERP system really hard. And after all, this is where a large junk of the data that someone typically wants to analyze in a BW comes from.&lt;/p&gt;
+
+&lt;p&gt;In the non-SAP world you could probably use Python and a scheduler like Airflow + any RDBMS. If you are fancy you can add a graphical monitoring tool such as grafana in conjunction with prometheus. Or you use fivetran to build the pipelines or Pentaho or really anything you please.&lt;/p&gt;
+
+&lt;p&gt;To my ears that sounds a bit like Apple vs. Android: A tightly integrated ecosystem vs. something more modular and open. This leads to my first expectation towards BW. As with apple’s stuff I expect that things just work as long as you stay with in the fenced off perimeter.&lt;/p&gt;
+
+&lt;h2 id=&quot;my-expectations-for-the-setup&quot;&gt;My expectations for the setup&lt;/h2&gt;
+
+&lt;p&gt;Coming from a Data Science tool stack I am relatively familiar with Relational Database Management Systems (RDBMS) such as PostgreSQL, MySQL, SQLite etc… Hands-on learning with these RDBMS is really straight forward. Simply add a preconfigured dockerfile to your project directory via VSCode and run the container. In total these are 4 or 5 clicks. To be fair this assumes you have Docker, Microsoft VSCode and the Remote Containers Extension set up.
+This leads to my second expecation: The Set up for Hands-on learning, prototyping etc. should be easy.&lt;/p&gt;
+
+&lt;p&gt;I found this blog &lt;a href=&quot;https://blogs.sap.com/2018/08/29/bw4hana-modeling-scenario-step-by-step/&quot;&gt;BW/4HANA Modeling Scenario Step by Step&lt;/a&gt; which I intend to roughly follow.
+I have the &lt;a href=&quot;https://www.eclipse.org/downloads/packages/release/2020-09/r&quot;&gt;Eclipse IDE 2020-09&lt;/a&gt; and &lt;a href=&quot;https://tools.hana.ondemand.com/&quot;&gt;Hana Modeling tools&lt;/a&gt; already. All I need now is a BW instance to start modelling.&lt;/p&gt;
+
+&lt;h2 id=&quot;setting-up-a-development-instance&quot;&gt;Setting up a development instance&lt;/h2&gt;
+
+&lt;p&gt;Unfortunately there is no easy way to set up a local development instance using a Container or VM engine. Whilst there is a HANA express edition on Dockerhub there is no BW. Luckily SAP has its own cloud provisioning portal that I can use to set up a BW instance with HANA some preconfigured content and a Windows VM with development tools.&lt;/p&gt;
+
+&lt;h3 id=&quot;1-create-a-cal-account-and-connect-your-cloud-subscription&quot;&gt;1. Create a CAL account and connect your cloud subscription&lt;/h3&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/0_ConnectAccount.jpg&quot; alt=&quot;Set up CAL&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Connect CAL to Azure or AWS&lt;/p&gt;
+&lt;p&gt;I create an account in the &lt;a href=&quot;https://cal.sap.com/&quot;&gt;SAP Cloud Applicance Library (CAL)&lt;/a&gt; and connect it to my Azure subscription by giving it an arbitraty name, adding my Subscription Id and the Standard Authorization Method. See &lt;a href=&quot;https://calstatic.hana.ondemand.com/res/~1608207188665~/docEN/042bb15ad2324c3c9b7974dbde389640.html&quot;&gt;here&lt;/a&gt; for a detailed documentation how to add your cloud subscription to your CAL account.&lt;/p&gt;
+
+&lt;h3 id=&quot;2-provision-your-bw4hana-instance&quot;&gt;2. Provision your BW/4HANA instance&lt;/h3&gt;
+
+&lt;p&gt;Now I head over to the Solutions screen and search for BW/4. I choose the Developer edition which comes with a free Developer license. The only costs are the costs that Azure charges me for the VMs.
+As you can see below I provision my instance on Azure. The initial setup takes around 60 minutes so after creating the instance and storing the private key in a secure location its time to get a coffee.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/1_Provision.jpg&quot; alt=&quot;Provisioning&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Provisioning&lt;/p&gt;
+
+&lt;h3 id=&quot;3-connect-to-the-instance&quot;&gt;3. Connect to the instance&lt;/h3&gt;
+
+&lt;p&gt;At first I head over to the Azure Portal to see what was installed.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/2_Azure-Ressources.jpg&quot; alt=&quot;Installed ressources&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Installed Ressources&lt;/p&gt;
+
+&lt;p&gt;Quite a few things were provisioned. In total I now have 2 VMs one Linux suse 12 which acts as the database and application server and a Windows VM with pre-installed modelling tools. I also see a few attached discs, and a virtual network for the Windows and Linux machine. Both are also exposed to the Internet which I can see either in my CAL overview or in your Azure portal.&lt;/p&gt;
+
+&lt;p&gt;Now I check what is running on the BW server. For this I need PUTTY. I had to convert the .pem key I downloaded earlier to a .ppk using PUTTYGen. I save the private key somewhere save and add it to my PUTTY connection configuration under SSH, Auth. According to the Getting started guide that I found on the CAL instance overview the Linux user is &lt;strong&gt;root&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;I check the exposed services with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;netstat -tulpn&lt;/code&gt; and boy there is a lot going on. You can see below that the SAP Webdispatcher is listening on ports in the 50000 range as well as the Hana Database (hdb) on local ports. According to the documentation the Webdispatcher seems to be a webserver and remote proxy that has functionality similiar to e.g. nginx &lt;a href=&quot;https://help.sap.com/doc/7b5ec370728810148a4b1a83b0e91070/1511%20002/en-US/frameset.htm?frameset.htm&quot;&gt;see here for details&lt;/a&gt;. It can rewrite and filter URLs, act as load balancer if you have multiple application servers and SSL termination point.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/3_Services.jpg&quot; alt=&quot;Exposed services&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Exposed services&lt;/p&gt;
+
+&lt;h4 id=&quot;the-database&quot;&gt;The Database&lt;/h4&gt;
+
+&lt;p&gt;Since Hana is already running I have a quick look into the database. For this I use the hdbsql command line tool which is located under &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;/usr/sap/&amp;lt;SID&amp;gt;/HDB&amp;lt;instance&amp;gt;/exe&lt;/code&gt;. SID is “HDB” and instance is “02”. I found these values in the Getting started guide.&lt;/p&gt;
+
+&lt;p&gt;With &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;hdbsql -i 02 -n localhost:30213&lt;/code&gt; I was able to connect to the database. &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SELECT * FROM TABLES;&lt;/code&gt; shows the available tables. I was asked to enter my user “SYSTEM” and the password I entered during instance creation in the CAL. I found that there are only system tables available that did not make a lot of sense for me. But a first success, the connection to the database is established. I also quickly check whether I can connect from my local machine to the database. For this I used &lt;a href=&quot;https://dbeaver.io/&quot;&gt;DBeaver&lt;/a&gt;, the database is also exposed to the internet. The user and password are the same, the IP is the external IP shown in your CAL instance details.
+I discovered while reading the Security Aspects (!) of the Getting Started guide that on port 30241 the tenant DB of the ABAP system is exposed. I assume this is what BW uses. But also in this database I only find a huge range of (&amp;gt;30000 in the SAPHANADB schema) system tables.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/8_HANATABLES.jpg&quot; alt=&quot;Hana Tables&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+A lot of tables even before I added any data&lt;/p&gt;
+
+&lt;h2 id=&quot;setting-up-hana-modelling-tools&quot;&gt;Setting up HANA Modelling tools&lt;/h2&gt;
+
+&lt;p&gt;Now let’s get started for real. I change to the BW Modelling view with a click on the highlighted button below.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/4_ModellingPerspective.jpg&quot; alt=&quot;Modelling view&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Modelling view&lt;/p&gt;
+
+&lt;p&gt;Then I create a new BW project. I receive an error that SAP GUI is not setup. GUI is another graphical administration client. Before ecilpse it was also used for data modelling. I don’t have it and hope I don’t need it so I ignore the error message.&lt;/p&gt;
+
+&lt;p&gt;Now I have to enter the connection credentials. In the dropdown I can choose between the preselected Group Selection and Custom Application server. Since I dont know what my Message Server or my group is supposed to be I chose Custom Application Server. There I enter the system ID and the Instance number both from the getting started Guide and the application server IP from CAL. On the next page I enter user = “DEVELOPER” and the password I entered during provisioning. And … I get an error. After trying different settings for instance number and Client. I check the port that the modelling tools try to connect to against what is configured in Azure. And well the 3300 port is not opened. I add the port to the network configuration. Now it returns an authentication error. After a bit of trial and error I find out that the DDIC user works.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/5_Connection.jpg&quot; alt=&quot;Connection&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Connection&lt;/p&gt;
+
+&lt;p&gt;Cool, I have a working connection. I still wonder why the setup processes is not described in the Getting Started guide. Maybe on the Windows VM that was spawned with the application and database server everyting is set up already for me? I try to connect but can’t figure out the user name. It is none of the OS user names listed in the Getting started guide and also not the ssh user name Azure returns in the connection tab. So I reset the user via Azure portal and log on. On the VM SAP GUI and Lumira are preinstalled. Unfortunately there is no Eclipse Modelling tools. And even more unfortunate is that the SAP GUI is also not configured. So again with some trial and error I enter the connection information as below:&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/6_SAPGui.jpg&quot; alt=&quot;ConnectionGUI&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Connection SAP GUI&lt;/p&gt;
+
+&lt;p&gt;For the application server it should also be possible to use the internal IP as shown in CAL or Azure Portal. I use the host name as returned by &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;sapcontrol -nr 00 -function GetSystemInstanceList&lt;/code&gt; from the Bash on my Application server.&lt;/p&gt;
+
+&lt;p&gt;I dont know if I need SAP GUI for anything. The Getting Started guide mentions some set up transactions needed for setting up the BW/4HANA Client but also says that they are already done for the developer edition. I bravely assume that I have the developer edition. This is also the point where I stop my Windows VM to safe some money.&lt;/p&gt;
+
+&lt;p&gt;Okay now I have everything connected, took me only a couple of hours phew….&lt;/p&gt;
+
+&lt;h2 id=&quot;creating-a-data-flow&quot;&gt;Creating a Data Flow&lt;/h2&gt;
+
+&lt;p&gt;In the BW-Repository I want to create a new InfoArea. This is the folder that all my data objects will live in. Right clicking a folder, new and InfoArea opens a context menu where I can enter the name and description of the area. But bummer… my user DDIC apparently has not the rights to create an InfoArea. After waisting time by trying to reconfigure or copy my project I simply create a new one and after with some more trial and error I find out that user DEVELOPER is set up on Client 001. What a joy, I created an InfoArea.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/7_NewInfoArea.jpg&quot; alt=&quot;InfoArea&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+InfoArea&lt;/p&gt;
+
+&lt;p&gt;Now I need a data flow to model my data. A right click on the InfoArea I created in the step before, selecting new and then Data Flow opens a context menu. Here I can only choose the name of the Data Flow.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/9_CREATINGDATAFLOW.jpg&quot; alt=&quot;DataFlow&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+DataFlow&lt;/p&gt;
+
+&lt;p&gt;I notice that in the InfoArea area tree on the left side no objects are shown, weird…. This is an issue since I can’t drag and drop already created Data Objects or select them once I closed the context menu.&lt;/p&gt;
+
+&lt;h3 id=&quot;reconfigure-the-address-of-the-project-server&quot;&gt;Reconfigure the address of the project server&lt;/h3&gt;
+
+&lt;p&gt;After my VM had an auto shutdown and the IP adress changed I had to reconfigure the IP address. After waisting some minutes searching for a context menu I find the .destination.properties file in the project navigation tree. There I can change the IP address. After restarting eclipse I was able to connect again. This only works though when project ist still opened. If not then you have to find your project working directory e.g.&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;C:\Users\&amp;lt;USER&amp;gt;\workspace\.metadata\.plugins\org.eclipse.core.resources.semantic\.cache\&amp;lt;PROJECT_NAME&amp;gt;\destination.properties&lt;/code&gt;, weird right?&lt;/p&gt;
+
+&lt;h3 id=&quot;creating-a-data-source-and-upload-a-csv&quot;&gt;Creating a Data Source and upload a csv&lt;/h3&gt;
+
+&lt;p&gt;In my Data Flow I drag and drop the Source System to the Modelling window just to find out that I do not have a source system configured.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/10_DataSource.jpg&quot; alt=&quot;DataSource&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Adding a Data Source&lt;/p&gt;
+
+&lt;p&gt;In the navigation tree on the left I right-click on Data source and add a new one. Now some trial and error and a google search tells me that I then have to again right click on the created data source, new and add DataSource. Here I run into a problem. After selecting None as my template I am asked to select an Application Component. I assume this is the program that allows me to ingest a file. But my system does not show me any…&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/11_NoAppComponent.jpg&quot; alt=&quot;AppComp&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+No application component&lt;/p&gt;
+
+&lt;p&gt;So maybe I have to run the system set up transactions after all….&lt;/p&gt;
+
+&lt;h3 id=&quot;detour-set-up-transaction-in-sap-gui&quot;&gt;Detour Set up transaction in SAP GUI&lt;/h3&gt;
+
+&lt;p&gt;Heading back to the Windows VM with SAP GUI I connect and execute transaction &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;STC01&lt;/code&gt; in the search like window on the top left. Then I enter &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SAP_BW4_SETUP_SIMPLE&lt;/code&gt; and click on view tasklist.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/12_SetupTrans.jpg&quot; alt=&quot;SetupTrans&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+“easy” Set up transaction&lt;/p&gt;
+
+&lt;p&gt;I see all the steps in the tasklist but apparently its still not running.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/13_SetupTrans2.jpg&quot; alt=&quot;SetupTrans2&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Task list&lt;/p&gt;
+
+&lt;p&gt;Under More I can start the list but immediately get an error. A parameter in the first task seems to be missing. After some searching, I find out that I can add parameters in the task list shown above by clicking on a symbol in the column on the right. Here I have to add the Master Password and the same I have to do for another task below. I check all tasks that contain parameters but only two require the password.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/14_AddParameters.jpg&quot; alt=&quot;Add Parameters&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Add Parameters&lt;/p&gt;
+
+&lt;p&gt;And yay, everything is running and green!
+Since I am already here I run the second task list which enables the BW 4 Launchpad, which I assume to be a Web application giving access to reports with the tas list &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SAP_BW4_LAUNCHPAD_SETUP&lt;/code&gt;. Nothing to configure here.&lt;/p&gt;
+
+&lt;h3 id=&quot;back-to-eclipse&quot;&gt;Back to eclipse&lt;/h3&gt;
+
+&lt;p&gt;Back in eclipse I find that this did not change the application component situation, so the entire detour had no effect.
+At least I can now access the Launchpad from the Windows VM under &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;https://vhcala4hci.dummy.nodomain:54430/sap/bc/ui5_ui5/ui2/ushell/shells/abap/FioriLaunchpad.html?sap-client=001&amp;amp;sap-language=EN#Shell-home&lt;/code&gt;. It somehow does not work from my local machine even when substituting the domain name with the external IP adress and opening up the port in Azure. But hey who is going to be picky here.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/16_FioriLaunchpad.jpg&quot; alt=&quot;Launchpad&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Launchpad running&lt;/p&gt;
+
+&lt;p&gt;I am happy that it runs at all, even though this did not bring me closer to my goal of modelling a data flow. So I head back to google.&lt;/p&gt;
+
+&lt;h2 id=&quot;what-the-heck-is-an-application-component&quot;&gt;What the heck is an application component?&lt;/h2&gt;
+
+&lt;p&gt;It seems my assumption that the application component is some sort of ingestion program that needs to be added to the backend is not correct. Another google search returns the following from the official SAP documentation:&lt;/p&gt;
+
+&lt;p&gt;“An application component is a modeling construct within a process integration scenario. From a logical point of view, it represents a participant of a process integration scenario. This contains the business tasks and concerns that this participant represents within the process integration scenario.
+An application component can stand for a business partner or a component of a business partner. At runtime it would be either one or more business systems or a integration process.”&lt;/p&gt;
+
+&lt;p&gt;I really dont understand what they are trying to tell me and how this is connected with me loading data into the data base….
+But more googling and trial and error leads me to another right click this time on my Data Source where I can create an Application component. Now I can add this application component to my Data Source and yay it works. Now I can configure my data source&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/17_DataSource.jpg&quot; alt=&quot;Data Source&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Well hidden extraction tab&lt;/p&gt;
+
+&lt;p&gt;After that it literally took me half an hour to find this hidden extraction tab at the very bottom. Whilst I assumed that something was not configured right. Well maybe I am just tired.&lt;/p&gt;
+
+&lt;p&gt;In the extraction tab I can select the file, configure the separator and header and even infer the schema. This is the highlight of my day!&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/19_DataSourceSettings.jpg&quot; alt=&quot;Data Source Settings&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Settings of the Data Source&lt;/p&gt;
+
+&lt;p&gt;After I activated the object in the menu bar I can see the data, on the right!&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/18_DataSourceCreated.jpg&quot; alt=&quot;Finally&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Finally data in the system!&lt;/p&gt;
+
+&lt;h3 id=&quot;date-conversion&quot;&gt;Date conversion&lt;/h3&gt;
+
+&lt;p&gt;Currently birthdate is saved as a string since in my input csv the date is stored as dd.mm.yyyy. I want to convert it to a DATS, the BW date format. BW usually saves dates as yyyymmdd. So back to the Data Source settings.&lt;/p&gt;
+
+&lt;p&gt;In the tab fields i find the setting conversion routines which offers me a long list of cryptic routines. “Conversion exit for domain GBDAT” again I am a bit lost. I was hoping for something along the lines of the C standard &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;%d.%m.%Y&lt;/code&gt;. Well back to trial and error then.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/20_DateConversion.jpg&quot; alt=&quot;DateConv&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Date conversion&lt;/p&gt;
+
+&lt;p&gt;Some blog suggests using the RSDAT conversion routine. I find it odd that it does not allow me to specify the input format, but I succeed loading and converting the date.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/21_RSDAT.jpg&quot; alt=&quot;RSDAT&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+RSDAT Conversion Routine&lt;/p&gt;
+
+&lt;p&gt;Since I am already here I rename the sequence column to customerID and declare it as the primary key of my table. Now its time to add some transactional data. I will simply use a csv again with a salesID column as primary key and a customerID as foreign key, a date and value column.&lt;/p&gt;
+
+&lt;p&gt;I add a new data source TRANS_DATA and it inherits the application components from my first data source. I am really still a bit confused what they are and do. Is it okay to use the same one created for my first data source? Well lets try.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/22_DataSource2.jpg&quot; alt=&quot;AppComponents&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Application Components are the same&lt;/p&gt;
+
+&lt;p&gt;Yep, seems to work and I notice that trial and error shows in my naming convention. I created a lot of test objects ;). This time with the european csv format with a “;” (semicolon) as a separator and homogenous date formatting, BW directly recognizes the date format and suggests a conversion. I note that the date is now shown as yyyymmdd which is the HANA format. This is different to the first data source and I have the feeling that the date conversion above was not successful. But for the moment I continue anyways.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/23_CorrectDate.jpg&quot; alt=&quot;CorrectDate&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Application Components are the same as in my first data source&lt;/p&gt;
+
+&lt;h3 id=&quot;persistency-layer&quot;&gt;Persistency Layer&lt;/h3&gt;
+
+&lt;p&gt;Now back to the data flow. By this time I renamed my data source to CUSTOMER. I drag and drop an advanced Data Store Object as staging layer on my data flow and configure it to copy my data source. Advanced DSOs are the workhorse in BW/4. They together with the Infoobjects make up the persistent layer. Advanced DSOs can be configured to support Change Data Capture by writing a log file to a separate table, partioning according to some function as well as indexing is also supported. Moreover I can activate a write interface for planning functionality, compress the table etc… Basically I understand what happens is that an ADSO object creates a whole bunch of tables in the HANA db. I understand that an ADSO looks for the user like a table and should as such also be accessible directly in the HANA database with the fields I configured.
+Infoobjects on the other hand are optimized for OLAP performance and are either characterisitics (Master Data) or KeyFigures. They can be used to navigate the report (navigation attributes) and their attributes are again Infoobjects. This is different to the ADSO which is based on fields, i.e. columns. I chose a standard ADSO as below. I note that the ADSO has a particular activation sequence. First create the ADSO then connect it with the object it should obtain data from and only &lt;strong&gt;then&lt;/strong&gt; activate it. Else it will return the error, that it does not contain any fields. Drawing the connection after activation did not work for me, I guess there is some trick that I don’t know.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/24_ADSO.jpg&quot; alt=&quot;ADSO&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+ADSO configuration&lt;/p&gt;
+
+&lt;p&gt;For each ADSO I have to add a transformation that allows me to define a transformation routine. Again this works by right clicking the ADSO.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/25_Create_Trans.jpg&quot; alt=&quot;Transformation&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Add Transformation&lt;/p&gt;
+
+&lt;p&gt;here I can also drag and drop the mapping and even add some formulas in the mapping. As you can see below I take the absolute value of the integer amount, its positive anyways but for the sake of trying it out …, and change the variable type to unit. Variable Type currency would require me to specify a currency field which I do not have.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/27_Mapping.jpg&quot; alt=&quot;Mapping&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Mapping&lt;/p&gt;
+
+&lt;p&gt;Now I also have to add a Data Process Routine which is again done by a right click. Here I can configure parallelization of extraction tasks but also filtering etc. I leave everything as is. Each object has to be activated after the configuration.&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/28_DTP.jpg&quot; alt=&quot;DTP&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Data Process Routine&lt;/p&gt;
+
+&lt;p&gt;No so far so good, thats all I need for an ADSO. I add a couple more ADSOs to check what happens when I choose different types. And finally I add my Master data to conclude my learning journey with the following flow:&lt;/p&gt;
+
+&lt;p class=&quot;figcaption&quot;&gt;&lt;img src=&quot;/assets/img/blog/BWInADay/30_final.jpg&quot; alt=&quot;Final&quot; class=&quot;lead&quot; width=&quot;1200&quot; height=&quot;893&quot; loading=&quot;lazy&quot; /&gt;
+Flow for the day&lt;/p&gt;
+
+&lt;h2 id=&quot;whats-next&quot;&gt;What’s next&lt;/h2&gt;
+
+&lt;p&gt;One day was not enough to explore the virtual data objects such as the composite provider or the Open ODS View. For example to join my two tables I need a composite provider and some join routine. I save this task for another day.&lt;/p&gt;
+
+&lt;p&gt;## My learnings&lt;/p&gt;
+
+&lt;p&gt;Phew a long day indeed. What seems like an easy task loading and transforming some csv data in BW took me the entire day. Okay I had to setup the entire system which took quite a while but still I wonder what made it so hard.&lt;/p&gt;
+
+&lt;h3 id=&quot;documentation-could-be-better&quot;&gt;Documentation could be better&lt;/h3&gt;
+
+&lt;p&gt;The documentation I found was often patchy at best and I had to connect different blogs and the SAP official documentation to gain an understanding. Most often even after researching I had to fall back to trial and error. One example is the dated Getting Started guide that sould be a lot more detailed, see also this SAP thread &lt;a href=&quot;https://blogs.sap.com/2020/02/24/setting-up-a-bw-4-instance-in-cal/&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;a-lot-of-clicking&quot;&gt;A lot of clicking&lt;/h3&gt;
+
+&lt;p&gt;Setting up a data flow required a lot of clicking. Most configurations have to be done by context menus that are often not self-explanatory. I get it with time you learn how to efficiently navigate these but I would love to a code option (there probably is one, that I am simply not aware of). Compare VSCode where every setting can also be done in a JSON.&lt;/p&gt;
+
+&lt;h3 id=&quot;what-about-my-expectations&quot;&gt;What about my expectations&lt;/h3&gt;
+
+&lt;p&gt;Well setup was manageable but not as simple as spinning up a docker container.
+My first admittedly high expecatiton that stuff just works was not met. Also neither the search function, nor the navigation tree worked properly. All in all a lot of stuff requires setting up or a very good understanding of how the application works This understanding is not easy to obtain, see documentation above.&lt;/p&gt;
+
+&lt;h3 id=&quot;much-stuff-left-to-explore&quot;&gt;Much stuff left to explore&lt;/h3&gt;
+
+&lt;p&gt;Obviously there is still a lot to explore in BW/4. Especially the more advanced topics like partioning, warm/ cold storage, delta loads etc are enough for a few more blog post. I might have to rethink my strategy though.&lt;/p&gt;
+
+&lt;h2 id=&quot;thank-you&quot;&gt;Thank you&lt;/h2&gt;
+
+&lt;p&gt;If you made it so far congratulations and a huge thanks. I definitely plan to do some more exploring and write about my experience.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h6 id=&quot;the-screenshots-are-my-own-the-header-picture-is-a-license-free-picture-fom-pixabay&quot;&gt;The screenshots are my own, the header picture is a license free picture fom pixabay&lt;/h6&gt;</content><author><name>Jan Tatzel</name><email>jye9pyu5g@mozmail.com</email></author><summary type="html">Hey there! I attempt to learn SAP BW/4 in a day. As with any tool my preferred way of learning is hands-on. So I will set up a BW/4 and model some data objects. This is not necessarily meant as a tutorial to follow along. I will certainly make mistakes and meet some dead ends. Anyways I am sure it will be fun! So follow me along on my attempt to learn BW in a day.</summary><media:thumbnail xmlns:media="http://search.yahoo.com/mrss/" url="https://jantatzel.com/assets/img/blog/BWInADay/board-2440249_1280.jpg" /><media:content medium="image" url="https://jantatzel.com/assets/img/blog/BWInADay/board-2440249_1280.jpg" xmlns:media="http://search.yahoo.com/mrss/" /></entry></feed>

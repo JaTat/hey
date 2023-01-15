@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en"><!--
+ __  __                __                                     __
+/\ \/\ \              /\ \             __                    /\ \
+\ \ \_\ \   __  __    \_\ \      __   /\_\      __       ___ \ \ \/'\
+ \ \  _  \ /\ \/\ \   /'_` \   /'__`\ \/\ \   /'__`\    /'___\\ \ , <
+  \ \ \ \ \\ \ \_\ \ /\ \L\ \ /\  __/  \ \ \ /\ \L\.\_ /\ \__/ \ \ \\`\
+   \ \_\ \_\\/`____ \\ \___,_\\ \____\ _\ \ \\ \__/.\_\\ \____\ \ \_\ \_\
+    \/_/\/_/ `/___/> \\/__,_ / \/____//\ \_\ \\/__/\/_/ \/____/  \/_/\/_/
+                /\___/                \ \____/
+                \/__/                  \/___/
+
+Powered by Hydejack v9.0.4 <https://hydejack.com/>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+  
+
+
+
+
+
+
+  
+    
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>FOSS ERP - Setting up and playing around with ERPNext | Jan Tatzel</title>
+<meta name="generator" content="Jekyll v4.2.0" />
+<meta property="og:title" content="FOSS ERP - Setting up and playing around with ERPNext" />
+<meta name="author" content="Jan Tatzel" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Local setup with the manual installation option and some playing around with ERPNext." />
+<meta property="og:description" content="Local setup with the manual installation option and some playing around with ERPNext." />
+<link rel="canonical" href="https://jantatzel.com/2022-01-02-FossErp/" />
+<meta property="og:url" content="https://jantatzel.com/2022-01-02-FossErp/" />
+<meta property="og:site_name" content="Jan Tatzel" />
+<meta property="og:image" content="https://jantatzel.com/assets/img/blog/OData/social-media-5187243_1920.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-01-02T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://jantatzel.com/assets/img/blog/OData/social-media-5187243_1920.png" />
+<meta property="twitter:title" content="FOSS ERP - Setting up and playing around with ERPNext" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Jan Tatzel"},"description":"Local setup with the manual installation option and some playing around with ERPNext.","url":"https://jantatzel.com/2022-01-02-FossErp/","@type":"BlogPosting","headline":"FOSS ERP - Setting up and playing around with ERPNext","dateModified":"2022-01-02T00:00:00+00:00","datePublished":"2022-01-02T00:00:00+00:00","image":{"srcset":{"1920w":"/assets/img/blog/ERPNext/christmas_1920.png","960w":"/assets/img/blog/ERPNext/christmas_1280.png","480w":"/assets/img/blog/ERPNext/christmas_640.png"},"url":"https://jantatzel.com/assets/img/blog/OData/social-media-5187243_1920.png","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://jantatzel.com/2022-01-02-FossErp/"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://jantatzel.com/assets/img/Jan_rund_small.jpg"},"name":"Jan Tatzel"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  
+
+  
+    <meta name="keywords" content="Jan Tatzel,personal page,about me">
+  
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jan Tatzel">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<meta name="application-name" content="Jan Tatzel">
+
+
+  <meta name="theme-color" content="rgb(8,46,57)">
+
+
+<meta name="generator" content="Hydejack v9.0.4" />
+
+
+<link rel="alternate" href="https://jantatzel.com/2021-01-31-BWInADay/" hreflang="en">
+
+<link type="application/atom+xml" rel="alternate" href="https://jantatzel.com/feed.xml" title="Jan Tatzel" />
+
+
+<link rel="shortcut icon"    href="/assets/icons/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/icons/icon-192x192.png">
+
+<link rel="manifest" href="/assets/site.webmanifest">
+
+
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+
+
+
+
+<link rel="preload" href="/assets/img/swipe.svg" as="image" id="_hrefSwipeSVG">
+
+
+
+
+
+
+<script>!function(e,t){"use strict";function n(e,t,n,o){e.addEventListener?e.addEventListener(t,n,o):e.attachEvent?e.attachEvent("on"+t,n):e["on"+t]=n}e.loadJS=function(e,o){var r=t.createElement("script");r.src=e,o&&n(r,"load",o,{once:!0});var a=t.scripts[0];return a.parentNode.insertBefore(r,a),r},e._loaded=!1,e.loadJSDeferred=function(o,r){function a(){e._loaded=!0,r&&n(c,"load",r,{once:!0});var o=t.scripts[0];o.parentNode.insertBefore(c,o)}var c=t.createElement("script");return c.src=o,e._loaded?a():n(e,"load",a,{once:!0}),c},e.setRel=e.setRelStylesheet=function(e){function o(){this.rel="stylesheet"}n(t.getElementById(e),"load",o,{once:!0})}}(window,document);
+!function(a){"use strict";var b=function(b,c,d){function e(a){return h.body?a():void setTimeout(function(){e(a)})}function f(){i.addEventListener&&i.removeEventListener("load",f),i.media=d||"all"}var g,h=a.document,i=h.createElement("link");if(c)g=c;else{var j=(h.body||h.getElementsByTagName("head")[0]).childNodes;g=j[j.length-1]}var k=h.styleSheets;i.rel="stylesheet",i.href=b,i.media="only x",e(function(){g.parentNode.insertBefore(i,c?g:g.nextSibling)});var l=function(a){for(var b=i.href,c=k.length;c--;)if(k[c].href===b)return a();setTimeout(function(){l(a)})};return i.addEventListener&&i.addEventListener("load",f),i.onloadcssdefined=l,l(f),i};"undefined"!=typeof exports?exports.loadCSS=b:a.loadCSS=b}("undefined"!=typeof global?global:this);
+!function(a){if(a.loadCSS){var b=loadCSS.relpreload={};if(b.support=function(){try{return a.document.createElement("link").relList.supports("preload")}catch(b){return!1}},b.poly=function(){for(var b=a.document.getElementsByTagName("link"),c=0;c<b.length;c++){var d=b[c];"preload"===d.rel&&"style"===d.getAttribute("as")&&(a.loadCSS(d.href,d,d.getAttribute("media")),d.rel=null)}},!b.support()){b.poly();var c=a.setInterval(b.poly,300);a.addEventListener&&a.addEventListener("load",function(){b.poly(),a.clearInterval(c)}),a.attachEvent&&a.attachEvent("onload",function(){a.clearInterval(c)})}}}(this);
+!function(w) {
+  w._baseURL = '/';
+  w._publicPath = '/assets/js/';
+  w._noPushState = false;
+  w._noDrawer = false;
+  w._noNavbar = false;
+  w._noToc = false;
+  w._noSearch = false;
+}(window);
+</script>
+
+
+
+<!--[if gt IE 8]><!---->
+
+  
+
+
+
+
+<link rel="stylesheet" href="/assets/css/hydejack-9.0.4.css" id="_stylePreload">
+<link rel="stylesheet" href="/assets/icomoon/style.css" id="_iconsPreload">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700%7CNoto+Sans:400,400i,700,700i&display=swap" id="_fontsPreload">
+
+
+
+  <style id="_pageStyle">
+
+html{--accent-color: rgb(79,177,186);--accent-color-faded: rgba(79,177,186,0.5);--accent-color-darkened: #409ba3;--theme-color: rgb(8,46,57)}
+
+</style>
+
+
+<!--<![endif]-->
+
+
+
+
+
+</head>
+
+<body class="no-break-layout">
+  
+
+
+<hy-push-state
+  id="_pushState"
+  replace-selector="#_main"
+  link-selector="a[href]:not([href^='/assets/']):not(.external):not(.no-push-state)"
+  script-selector="script"
+  duration="500"
+  hashchange
+>
+  
+  <div id="_navbar" class="navbar fixed-top">
+  <div class="content">
+    <span class="sr-only">Jump to:</span>
+    <div class="nav-btn-bar">
+      <a id="_menu" class="nav-btn no-hover" href="#_drawer--opened">
+        <span class="sr-only">Navigation</span>
+        <span class="icon-menu"></span>
+      </a>
+      <div class="nav-span"></div>
+    </div>
+  </div>
+</div>
+<hr class="sr-only" hidden />
+
+  <main
+  id="_main"
+  class="content layout-post"
+  role="main"
+>
+  
+
+
+
+
+
+<article id="post-FossErp" class="page post mb6" role="article">
+  <header>
+    <h1 class="post-title flip-project-title">
+      
+        FOSS ERP - Setting up and playing around with ERPNext
+      
+    </h1>
+
+    <div class="post-date">
+      
+      <time datetime="2022-01-02T00:00:00+00:00">02 Jan 2022</time>
+      
+      
+      
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+      
+        <div class="lead aspect-ratio sixteen-nine flip-project-img">
+          
+
+
+<img
+  
+    src="/assets/img/blog/OData/social-media-5187243_1920.png"
+    srcset="/assets/img/blog/ERPNext/christmas_1920.png 1920w,/assets/img/blog/ERPNext/christmas_1280.png 960w,/assets/img/blog/ERPNext/christmas_640.png 480w"
+    
+  
+  alt="FOSS ERP - Setting up and playing around with ERPNext"
+  
+  
+  width="864"
+  height="486"
+  loading="lazy"
+/>
+
+        </div>
+      
+      
+    
+
+    
+
+
+
+  
+    <p class="note-sm" >
+      Local setup with the manual installation option and some playing around with ERPNext.
+
+    </p>
+  
+
+
+  </header>
+
+  
+    <p>Hey there! Imagine you have a small retail business and its the busy season of the year. You would probably like a system that keeps track of and helps to plan the goods on stock, your sales, no. of employees and their assignments, the expenses you have etc. This is what an ERP, Enterprise resource planning system does. It tracks and helps you plan your flow of goods, value, the usage of your capital etc.. Technically its a transactional system designed for OLTP, that is industry jargon for online transactional processing. A system designed for concurrent inserting and updating data in mostly relational databases. In my other blog posts I was playing around with SAP BW an OLAP, or online analytical processing system. In contrast to the OLTP an OLAP system is designed for complex queries to a huge number of records and mainly read access. OLTP systems are built for a balanced read/write access scenario to a small amount of data.</p>
+
+<p>Certainly one of the best known solutions for an ERP is SAP’s S/4HANA. But for a small business or startup this might be prohibitively expensive. Enter the free and open source [FOSS] ERPs. There are several solutions out there, see <a href="https://opensource.com/tools/enterprise-resource-planning">here</a> for an overview, but I am going to set up and play around with ERPNext today. Why? Because it has a pretty active community with ~416 contributors, 10.3k stars and 935 releases on <a href="https://github.com/frappe/erpnext">github</a>. Also it is web based, i.e. accessible via the browser and built on python which I know and like.</p>
+
+<h1 id="benefits-of-an-erp-system">Benefits of an ERP system</h1>
+<p>An ERP system is a digital twin of all major company processes, or at least that’s what it should be. Theses processes depend on the company’s industry, e.g. a retailer does not have a plan-to-produce process since all products are procured. Often the most important processes are</p>
+
+<ul>
+  <li>Order-to-cash, all the steps necessary from ordering of a product until the customer has paid the product</li>
+  <li>Purchase-to-pay, all process steps from purchasing a product until its paid by the company</li>
+  <li>Plan-to-produce, all the steps that manufacturing companies need to produce a product</li>
+  <li>Financial Management, especially accounting, i.e. keeping track of all the monetary flows and assets between all the accounts of a company</li>
+</ul>
+
+<p>Now its not necessary to use an ERP software for all theses processes. One can certainly do with several specialized solutions e.g. for accounting or even with spreadsheets.
+The main benefit of such a software is that it integrates and consolidates all the information in one data model and hence serves as a consistence “source of truth”. Often theses systems come with template processes and data models to get you started quickly. The downside of all this is that customization is often expensive and hence at least for small companies the recommendation that I often read is to only customize the solution when absolutely necessary.</p>
+
+<h1 id="setting-up-erp-next">Setting up ERP Next</h1>
+<p>I will set up ERP Next on my local machine on a Ubuntu 20.04 VM. I will use the manual installation, there is also a dockerized solution, a easy install script and prebuilt VMs available. Also note that you can order ERPNext as Software as a Service from their <a href="https://erpnext.com/">homepage</a>. The you will not have to bother about the set up at all.
+For the manual installation I follow the excellent guide <a href="https://discuss.erpnext.com/t/tutorial-how-to-manually-install-erpnext-v13-11-production-on-debian-10-w-ssl-cert/81017">here</a>.</p>
+
+<h2 id="prerequisites-to-follow-along">Prerequisites to follow along</h2>
+<ul>
+  <li>A Hypervisor , e.g. Oracle’s <a href="https://www.virtualbox.org/">VirtualBox</a>; for production on bare metal you could e.g. use <a href="https://www.proxmox.com/en/proxmox-ve">proxmox</a>.</li>
+  <li><a href="https://www.vagrantup.com/">Vagrant</a> - not strictly necessary but who doesn’t like infrastructure as code</li>
+  <li>Vagrant file, e.g. the one I created <a href="https://gist.github.com/JaTat/1e1ad25066cc72e061d93298bdf67129">here</a></li>
+</ul>
+
+<h2 id="setting-up-the-vm">Setting up the VM</h2>
+
+<p>Place the vagrant file in a suitable location. The file specifies the box, i.e. the OS image for the VM, defines names, the network and installs some dependencies of ERPNext. Lets have a closer look:</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># encoding: utf-8</span>
+<span class="c1"># Variable definition</span>
+<span class="no">VAGRANT_BOX</span> <span class="o">=</span> <span class="s1">'generic/ubuntu2004'</span>
+<span class="no">VM_NAME</span> <span class="o">=</span> <span class="s1">'ERPbox2'</span>
+<span class="c1"># VM User — 'vagrant' by default</span>
+<span class="no">VM_USER</span> <span class="o">=</span> <span class="s1">'vagrant'</span>
+<span class="c1"># path of folder that should be synced, if any</span>
+<span class="no">HOST_PATH</span> <span class="o">=</span> <span class="s1">'F:/virtualbox/ErpNext'</span>
+<span class="c1"># Where to sync to on Guest — 'vagrant' is the default user name</span>
+<span class="no">GUEST_PATH</span> <span class="o">=</span> <span class="s1">'/mnt/erpnext'</span><span class="c1"># </span>
+<span class="no">VM_PORT</span> <span class="o">=</span> <span class="mi">8080</span>
+</code></pre></div></div>
+
+<p>Above I define some variables that will be used in the body of the script that invokes the VM. <em>VAGRANT_BOX</em> is the name of the VM image from <a href="https://app.vagrantup.com/boxes/search">Vagrants image repository</a>, <em>VM_PORT</em> is the host port that I will map the VM port to. The <em>HOST_PATH</em> is the path of the host directory that is mounted to the VM under <em>GUEST_PATH</em>. Mounting a local directory is needed if you want to persist data even when destroying the VM. Per default vagrant mounts the Project Directory to <em>/home/vagrant</em> which I disable below.</p>
+
+<div class="language-ruby highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="no">Vagrant</span><span class="p">.</span><span class="nf">configure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">config</span><span class="o">|</span>  <span class="c1"># Vagrant box from Hashicorp</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">box</span> <span class="o">=</span> <span class="no">VAGRANT_BOX</span>
+  
+  <span class="c1"># Name of Machine</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">hostname</span> <span class="o">=</span> <span class="no">VM_NAME</span>  <span class="c1"># Set VM name in Virtualbox</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">provider</span> <span class="s2">"virtualbox"</span> <span class="k">do</span> <span class="o">|</span><span class="n">vb</span><span class="o">|</span>
+    <span class="n">vb</span><span class="p">.</span><span class="nf">name</span> <span class="o">=</span> <span class="no">VM_NAME</span>
+    <span class="n">vb</span><span class="p">.</span><span class="nf">memory</span> <span class="o">=</span> <span class="mi">4096</span>
+    <span class="n">vb</span><span class="p">.</span><span class="nf">gui</span> <span class="o">=</span> <span class="kp">true</span>
+  <span class="k">end</span>  
+
+  <span class="c1"># Port forwarding</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">network</span> <span class="s2">"forwarded_port"</span><span class="p">,</span> <span class="ss">guest: </span><span class="mi">80</span><span class="p">,</span> <span class="ss">host: </span><span class="no">VM_PORT</span>  
+  <span class="c1"># Sync folder</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">synced_folder</span> <span class="no">HOST_PATH</span><span class="p">,</span> <span class="no">GUEST_PATH</span>  
+  <span class="c1"># Disable default Vagrant folder, use a unique path per project</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">synced_folder</span> <span class="s1">'.'</span><span class="p">,</span> <span class="s1">'/home/'</span><span class="o">+</span><span class="no">VM_USER</span><span class="o">+</span><span class="s1">''</span><span class="p">,</span> <span class="ss">disabled: </span><span class="kp">true</span>
+  <span class="c1"># install dependencies of ERPNext</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">provision</span> <span class="s2">"shell"</span><span class="p">,</span> <span class="ss">inline: </span><span class="o">&lt;&lt;-</span><span class="no">SHELL</span><span class="sh">
+    apt update
+    apt upgrade
+    apt install -y git curl
+    curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+    apt install -y nodejs mariadb-server redis-server python3-pip nginx python3-testresources python3-distutils python3-setuptools libssl-dev wkhtmltopdf
+
+</span><span class="no">  SHELL</span>
+
+  <span class="n">config</span><span class="p">.</span><span class="nf">vm</span><span class="p">.</span><span class="nf">provision</span> <span class="s2">"shell"</span><span class="p">,</span>  <span class="ss">path: </span><span class="s2">"erpnext_provisioning.sh"</span>
+<span class="k">end</span>
+</code></pre></div></div>
+
+<p>The body of the script defines everything needed to provision the VM. The configuration is written in ruby and is hence very flexible. E.g. with a loop you can provision multiple VMs. The various configuration options can be found in the <a href="https://www.vagrantup.com/docs/vagrantfile">vagrant docs</a></p>
+
+<p>In short: I tell vagrant to use virtualbox as provider and configure the name of the VM and allocate 4GB of memory to it. I set the gui to true, which opens the virtualbox console. This is handy if you have never worked before with the box and want to see what it does during startup. Some boxes require you to input something during installation which is hard to diagnose without the gui. I forward port 80 to the host port 8080, mount the local folder and finally install some dependencies of ERPnext.</p>
+
+<p>In <em>config.vm.provision “shell”, inline: «-SHELL</em> I use the shell inline <a href="https://www.vagrantup.com/docs/provisioning/shell">provisioner</a> to execute tasks in the VM shell. Here I could also use ansible playbooks, something that I definitely want to explore.</p>
+
+<p>First I update the VM with  <em>apt update</em> and <em>upgrade</em>, then I install curl and node.js from source in version 14. I also need:</p>
+
+<ul>
+  <li>mariadb-server: The relational database ERPNext stores data in</li>
+  <li>redis: in-memory Caching-layer</li>
+  <li>nginx: Webserver</li>
+  <li>libssl: Library for Transport Layer Security, not strictly needed here since I will not create certificates for my local play environment</li>
+  <li>wkhtmltopdf: HTML to PDF converter</li>
+</ul>
+
+<p>Find the dependencies of the frappe framework also <a href="https://frappeframework.com/docs/v13/user/en/installation">here</a></p>
+
+<p>Just for fun I use a second way to execute shell commands by passing an external file. in <em>erpnext_provisioning.sh</em> which is in the same folder, I create a new user and configure the mariadb:</p>
+
+<p>Find the file also <a href="https://gist.github.com/JaTat/4f7084a778ac1b1da74dc8b88779be00">here</a>.</p>
+
+<pre><code class="language-Shell">#!/bin/bash
+# create ERP user
+adduser erpnext --gecos "" --disabled-password
+usermod -aG sudo erpnext
+
+# Append MYSQL Conf to file
+cat &lt;&lt;EOT &gt;&gt; /etc/mysql/my.cnf
+[mysqld]
+character-set-client-handshake = FALSE
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+[mysql]
+default-character-set = utf8mb4
+EOT
+</code></pre>
+
+<pre><code class="language-Shell">vagrant up
+</code></pre>
+
+<p>starts the VM. A virtualbox window should open where you can follow along the provisioning process if your host has graphical output.</p>
+
+<pre><code class="language-Shell">vagrant ssh
+</code></pre>
+<p>The command above will attach a shell to the default VM, provide the name of the ERPnext VM with <em>vagrant ssh [name|id]</em> if you have many VMs, you can get a list and the status of your VMs with <em>vagrant status</em>.</p>
+
+<h2 id="additional-work-after-vm-provisioning">Additional work after VM provisioning</h2>
+
+<p>I will do the remaining setup from within the VM. These steps can probably be automated in a script as well.</p>
+
+<p>In the shell I make myself root and set a password for the ERPNext user:</p>
+
+<pre><code class="language-Shell">sudo su -
+passwd erpnext
+</code></pre>
+
+<p>from here on I basically follow the tutorial created by bkm in the ERPNext forum, <a href="https://discuss.erpnext.com/t/tutorial-how-to-manually-install-erpnext-v13-11-production-on-debian-10-w-ssl-cert/81017">here</a></p>
+
+<p>restart the database:</p>
+
+<pre><code class="language-Shell">service mysql restart
+</code></pre>
+
+<p>set up the database:</p>
+
+<pre><code class="language-Shell">mysql_secure_installation
+</code></pre>
+
+<ul>
+  <li>Set root password? [Y/n]: y</li>
+  <li>Remove anonymous users? [Y/n]: y</li>
+  <li>Disallow root login -remotely? [Y/n]: n</li>
+  <li>Remove test database and -access to it? [Y/n]: y</li>
+  <li>Reload privilege tables -now? [Y/n]: y</li>
+</ul>
+
+<p>Login to mariadb:</p>
+<pre><code class="language-Shell">mysql -u root -p[your-password-here]
+</code></pre>
+
+<p>and execute the following in the mysql CLI:</p>
+<pre><code class="language-Shell">USE mysql;
+UPDATE user SET plugin=' ' WHERE user = 'root';
+FLUSH PRIVILEGES;
+exit
+</code></pre>
+
+<p>Change to the erpnext user:</p>
+
+<pre><code class="language-Shell">su erpnext -
+</code></pre>
+<p>and install yarn and frappe bench</p>
+
+<pre><code class="language-Shell">sudo npm install -g yarn
+
+pip3 install frappe-bench
+export PATH=$PATH:/home/erpnext/.local/bin
+
+sudo pip3 install frappe-bench
+</code></pre>
+
+<p>setup bench for production, this will configure nginx and create the services needed to run automatically after restarting the VM</p>
+
+<pre><code class="language-Shell">
+cd /mnt/erpnext
+
+bench init --frappe-branch version-13 frappe-bench
+
+cd frappe-bench
+
+bench new-site site1.local
+
+bench get-app --branch version-13 erpnext
+
+bench --site site1.local install-app erpnext
+
+sudo bench setup production [USER]
+</code></pre>
+
+<p>The I have to check whether the <strong>supervisor.conf</strong> file was created in <strong>/etc/supervisor/conf.d</strong>.</p>
+
+<p>In my case it was not so I had to copy it from the frappe directory:</p>
+
+<pre><code class="language-Shell">sudo cp ~/frappe-bench/config/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
+</code></pre>
+
+<p>Now the last step is to enable the scheduler and reboot:</p>
+
+<pre><code class="language-Shell">bench --site site1.local enable-scheduler
+sudo shutdown -r now
+</code></pre>
+
+<h2 id="a-running-erp-instance">A running ERP instance</h2>
+
+<p>And finally a running ERP on localhost:8080:</p>
+
+<p><img src="/assets/img/blog/ERPNext/ERP.png" alt="ERP on localhost:8080" /></p>
+
+<h2 id="next-steps">Next steps</h2>
+<p>Now the hard part is setting up and configuring the ERP from scratch. I certainly want to play around a little and setup some test processes. Stay tuned.</p>
+
+  
+</article>
+
+
+<hr class="dingbat related" />
+
+
+
+
+  
+     
+
+
+  <aside class="about related mt4 mb4" role="complementary">
+    
+    
+
+<div class="author mt4">
+  
+
+  
+
+  
+  
+  <h2  class="page-title hr-bottom">
+    About
+  </h2>
+
+  <p>Hey, I am Jan.
+I am an Advanced Analytics/ BI Consultant turned Data Management enthusiast.
+I love to dive into new technologies. I am currently working for Mercedes-Benz.</p>
+
+
+  <div class="sidebar-social">
+    <span class="sr-only">Social:</span>
+<ul>
+  
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="mailto:jye9pyu5g@mozmail.com" title="Email" class="no-mark-external">
+      <span class="icon-mail"></span>
+      <span class="sr-only">Email</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.linkedin.com/in/jan-tatzel-42369a182" title="LinkedIn" class="no-mark-external">
+      <span class="icon-linkedin2"></span>
+      <span class="sr-only">LinkedIn</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.xing.com/profile/Jan_Tatzel" title="XING" class="no-mark-external">
+      <span class="icon-xing2"></span>
+      <span class="sr-only">XING</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://github.com/JaTat" title="GitHub" class="no-mark-external">
+      <span class="icon-github"></span>
+      <span class="sr-only">GitHub</span>
+    </a>
+  </li>
+
+
+    
+  
+</ul>
+
+  </div>
+</div>
+
+  </aside>
+
+
+  
+
+  
+  
+
+  
+    
+
+
+  <aside class="related mb4" role="complementary">  <h2 class="hr-bottom">Related Posts</h2>  <ul class="related-posts">                  <li class="h4">  <a href="/2023-01-06-Metabase/" class="flip-title"><span>Metabase - BI on ERPnext</span></a>  <time class="faded fine" datetime="2023-01-06T00:00:00+00:00">06 Jan 2023</time></li>                        <li class="h4">  <a href="/2022-05-22-PyRFC/" class="flip-title"><span>PyRFC - Remote Controlling SAP ABAP systems with python</span></a>  <time class="faded fine" datetime="2022-05-22T00:00:00+00:00">22 May 2022</time></li>                        <li class="h4">  <a href="/2021-09-19-BWODataServices/" class="flip-title"><span>OData Services in SAP BW/4 from a HANA table</span></a>  <time class="faded fine" datetime="2021-09-19T00:00:00+00:00">19 Sep 2021</time></li>            </ul></aside>
+
+  
+
+  
+  
+
+  
+    
+
+  
+
+
+  
+<footer class="content" role="contentinfo">
+  <hr/>
+  
+    <p><small class="copyright">© 2020. All rights reserved.
+</small></p>
+  
+  
+    <nav class="legal"><small>
+    
+      
+      <a class="heading flip-title" href="/LICENSE/">LICENSE</a>
+      |
+    
+      
+      <a class="heading flip-title" href="/IMPRESSUM/">IMPRESSUM</a>
+      
+    
+    </small></nav>
+  
+    <p><small>Powered by <a class="external" href="https://hydejack.com/">Hydejack</a> v<span id="_version">9.0.4</span></small></p>
+  <hr class="sr-only"/>
+</footer>
+
+
+</main>
+
+  <hy-drawer
+  id="_drawer"
+  class=""
+  side="left"
+  threshold="10"
+  noscroll
+  
+>
+  <header id="_sidebar" class="sidebar" role="banner">
+    
+
+
+
+
+<div class="sidebar-bg sidebar-overlay" style="background-color:rgb(8,46,57);background-image:url(/assets/img/street@0.8x.jpg)"></div>
+
+    <div class="sidebar-sticky">
+  <div class="sidebar-about">
+    
+      <a class="no-hover" href="/" tabindex="-1">
+        <img src="/assets/img/Jan_rund_small.jpg" class="avatar" alt="Jan Tatzel" width="120" height="120" loading="lazy" />
+      </a>
+    
+    <a class="sidebar-title" href="/"><h2 class="h1">Jan Tatzel</h2></a>
+    
+    
+      <p class="">
+        Hey there!
+
+      </p>
+    
+  </div>
+
+  <nav class="sidebar-nav heading" role="navigation">
+    <span class="sr-only">Navigation:</span>
+<ul>
+  
+    
+      
+      <li>
+        <a
+          id="_drawer--opened"
+          href="/"
+          class="sidebar-nav-item"
+          
+        >
+          Blog
+        </a>
+      </li>
+    
+      
+      <li>
+        <a
+          
+          href="/about/"
+          class="sidebar-nav-item"
+          
+        >
+          About me
+        </a>
+      </li>
+    
+  
+</ul>
+
+  </nav>
+
+  
+  <div class="sidebar-social">
+    <span class="sr-only">Social:</span>
+<ul>
+  
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="mailto:jye9pyu5g@mozmail.com" title="Email" class="no-mark-external">
+      <span class="icon-mail"></span>
+      <span class="sr-only">Email</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.linkedin.com/in/jan-tatzel-42369a182" title="LinkedIn" class="no-mark-external">
+      <span class="icon-linkedin2"></span>
+      <span class="sr-only">LinkedIn</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.xing.com/profile/Jan_Tatzel" title="XING" class="no-mark-external">
+      <span class="icon-xing2"></span>
+      <span class="sr-only">XING</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://github.com/JaTat" title="GitHub" class="no-mark-external">
+      <span class="icon-github"></span>
+      <span class="sr-only">GitHub</span>
+    </a>
+  </li>
+
+
+    
+  
+</ul>
+
+  </div>
+</div>
+  </header>
+</hy-drawer>
+<hr class="sr-only" hidden />
+
+</hy-push-state>
+
+
+  <!--[if gt IE 10]><!---->
+  <script nomodule>!function(){var e=document.createElement("script");if(!("noModule"in e)&&"onbeforeload"in e){var t=!1;document.addEventListener("beforeload",function(n){if(n.target===e)t=!0;else if(!n.target.hasAttribute("nomodule")||!t)return;n.preventDefault()},!0),e.type="module",e.src=".",document.head.appendChild(e),e.remove()}}();
+</script>
+  <script src="/assets/js/hydejack-9.0.4.js" type="module"></script>
+  <script src="/assets/js/LEGACY-hydejack-9.0.4.js" nomodule defer></script>
+  
+
+  
+
+<!--<![endif]-->
+  
+
+
+
+<div hidden>
+  
+  <h2 class="sr-only">Templates (for web app):</h2>
+
+  <template id="_animation-template">
+  <div class="animation-main fixed-top">
+    <div class="content">
+      <div class="page"></div>
+    </div>
+  </div>
+</template>
+
+  <template id="_loading-template">
+  <div class="loading nav-btn fr">
+    <span class="sr-only">Loading…</span>
+    <span class="icon-cog"></span>
+  </div>
+</template>
+
+  <template id="_error-template">
+  <div class="page">
+    <h1 class="page-title">Error</h1>
+    
+    
+    <p class="lead">
+      Sorry, an error occurred while loading <a class="this-link" href=""></a>.
+
+    </p>
+  </div>
+</template>
+
+  <template id="_forward-template">
+  <button id="_forward" class="forward nav-btn no-hover">
+    <span class="sr-only">Forward</span>
+    <span class="icon-arrow-right2"></span>
+  </button>
+</template>
+
+  <template id="_back-template">
+  <button id="_back" class="back nav-btn no-hover">
+    <span class="sr-only">Back</span>
+    <span class="icon-arrow-left2"></span>
+  </button>
+</template>
+
+  <template id="_permalink-template">
+  <a href="#" class="permalink">
+    <span class="sr-only">Permalink</span>
+    <span class="content-hash"></span>
+  </a>
+</template>
+
+</div>
+
+
+</body>
+</html>

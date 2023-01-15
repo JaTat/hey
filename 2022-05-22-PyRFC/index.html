@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en"><!--
+ __  __                __                                     __
+/\ \/\ \              /\ \             __                    /\ \
+\ \ \_\ \   __  __    \_\ \      __   /\_\      __       ___ \ \ \/'\
+ \ \  _  \ /\ \/\ \   /'_` \   /'__`\ \/\ \   /'__`\    /'___\\ \ , <
+  \ \ \ \ \\ \ \_\ \ /\ \L\ \ /\  __/  \ \ \ /\ \L\.\_ /\ \__/ \ \ \\`\
+   \ \_\ \_\\/`____ \\ \___,_\\ \____\ _\ \ \\ \__/.\_\\ \____\ \ \_\ \_\
+    \/_/\/_/ `/___/> \\/__,_ / \/____//\ \_\ \\/__/\/_/ \/____/  \/_/\/_/
+                /\___/                \ \____/
+                \/__/                  \/___/
+
+Powered by Hydejack v9.0.4 <https://hydejack.com/>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+  
+
+
+
+
+
+
+  
+    
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>PyRFC - Remote Controlling SAP ABAP systems with python | Jan Tatzel</title>
+<meta name="generator" content="Jekyll v4.2.0" />
+<meta property="og:title" content="PyRFC - Remote Controlling SAP ABAP systems with python" />
+<meta name="author" content="Jan Tatzel" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Set up and run a remote function call on a BW system with pyRFC" />
+<meta property="og:description" content="Set up and run a remote function call on a BW system with pyRFC" />
+<link rel="canonical" href="https://jantatzel.com/2022-05-22-PyRFC/" />
+<meta property="og:url" content="https://jantatzel.com/2022-05-22-PyRFC/" />
+<meta property="og:site_name" content="Jan Tatzel" />
+<meta property="og:image" content="https://jantatzel.com/assets/img/blog/PyRFC/coding_1920.jpg" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2022-05-22T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://jantatzel.com/assets/img/blog/PyRFC/coding_1920.jpg" />
+<meta property="twitter:title" content="PyRFC - Remote Controlling SAP ABAP systems with python" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Jan Tatzel"},"description":"Set up and run a remote function call on a BW system with pyRFC","url":"https://jantatzel.com/2022-05-22-PyRFC/","@type":"BlogPosting","headline":"PyRFC - Remote Controlling SAP ABAP systems with python","dateModified":"2022-05-22T00:00:00+00:00","datePublished":"2022-05-22T00:00:00+00:00","image":{"srcset":{"1920w":"/assets/img/blog/PyRFC/coding_1920.jpg","960w":"/assets/img/blog/PyRFC/coding_1280.jpg","480w":"/assets/img/blog/PyRFC/coding_640.jpg"},"url":"https://jantatzel.com/assets/img/blog/PyRFC/coding_1920.jpg","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://jantatzel.com/2022-05-22-PyRFC/"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://jantatzel.com/assets/img/Jan_rund_small.jpg"},"name":"Jan Tatzel"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  
+
+  
+    <meta name="keywords" content="Jan Tatzel,personal page,about me">
+  
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jan Tatzel">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<meta name="application-name" content="Jan Tatzel">
+
+
+  <meta name="theme-color" content="rgb(8,46,57)">
+
+
+<meta name="generator" content="Hydejack v9.0.4" />
+
+
+<link rel="alternate" href="https://jantatzel.com/2021-01-31-BWInADay/" hreflang="en">
+
+<link type="application/atom+xml" rel="alternate" href="https://jantatzel.com/feed.xml" title="Jan Tatzel" />
+
+
+<link rel="shortcut icon"    href="/assets/icons/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/icons/icon-192x192.png">
+
+<link rel="manifest" href="/assets/site.webmanifest">
+
+
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+
+
+
+
+<link rel="preload" href="/assets/img/swipe.svg" as="image" id="_hrefSwipeSVG">
+
+
+
+
+
+
+<script>!function(e,t){"use strict";function n(e,t,n,o){e.addEventListener?e.addEventListener(t,n,o):e.attachEvent?e.attachEvent("on"+t,n):e["on"+t]=n}e.loadJS=function(e,o){var r=t.createElement("script");r.src=e,o&&n(r,"load",o,{once:!0});var a=t.scripts[0];return a.parentNode.insertBefore(r,a),r},e._loaded=!1,e.loadJSDeferred=function(o,r){function a(){e._loaded=!0,r&&n(c,"load",r,{once:!0});var o=t.scripts[0];o.parentNode.insertBefore(c,o)}var c=t.createElement("script");return c.src=o,e._loaded?a():n(e,"load",a,{once:!0}),c},e.setRel=e.setRelStylesheet=function(e){function o(){this.rel="stylesheet"}n(t.getElementById(e),"load",o,{once:!0})}}(window,document);
+!function(a){"use strict";var b=function(b,c,d){function e(a){return h.body?a():void setTimeout(function(){e(a)})}function f(){i.addEventListener&&i.removeEventListener("load",f),i.media=d||"all"}var g,h=a.document,i=h.createElement("link");if(c)g=c;else{var j=(h.body||h.getElementsByTagName("head")[0]).childNodes;g=j[j.length-1]}var k=h.styleSheets;i.rel="stylesheet",i.href=b,i.media="only x",e(function(){g.parentNode.insertBefore(i,c?g:g.nextSibling)});var l=function(a){for(var b=i.href,c=k.length;c--;)if(k[c].href===b)return a();setTimeout(function(){l(a)})};return i.addEventListener&&i.addEventListener("load",f),i.onloadcssdefined=l,l(f),i};"undefined"!=typeof exports?exports.loadCSS=b:a.loadCSS=b}("undefined"!=typeof global?global:this);
+!function(a){if(a.loadCSS){var b=loadCSS.relpreload={};if(b.support=function(){try{return a.document.createElement("link").relList.supports("preload")}catch(b){return!1}},b.poly=function(){for(var b=a.document.getElementsByTagName("link"),c=0;c<b.length;c++){var d=b[c];"preload"===d.rel&&"style"===d.getAttribute("as")&&(a.loadCSS(d.href,d,d.getAttribute("media")),d.rel=null)}},!b.support()){b.poly();var c=a.setInterval(b.poly,300);a.addEventListener&&a.addEventListener("load",function(){b.poly(),a.clearInterval(c)}),a.attachEvent&&a.attachEvent("onload",function(){a.clearInterval(c)})}}}(this);
+!function(w) {
+  w._baseURL = '/';
+  w._publicPath = '/assets/js/';
+  w._noPushState = false;
+  w._noDrawer = false;
+  w._noNavbar = false;
+  w._noToc = false;
+  w._noSearch = false;
+}(window);
+</script>
+
+
+
+<!--[if gt IE 8]><!---->
+
+  
+
+
+
+
+<link rel="stylesheet" href="/assets/css/hydejack-9.0.4.css" id="_stylePreload">
+<link rel="stylesheet" href="/assets/icomoon/style.css" id="_iconsPreload">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700%7CNoto+Sans:400,400i,700,700i&display=swap" id="_fontsPreload">
+
+
+
+  <style id="_pageStyle">
+
+html{--accent-color: rgb(79,177,186);--accent-color-faded: rgba(79,177,186,0.5);--accent-color-darkened: #409ba3;--theme-color: rgb(8,46,57)}
+
+</style>
+
+
+<!--<![endif]-->
+
+
+
+
+
+</head>
+
+<body class="no-break-layout">
+  
+
+
+<hy-push-state
+  id="_pushState"
+  replace-selector="#_main"
+  link-selector="a[href]:not([href^='/assets/']):not(.external):not(.no-push-state)"
+  script-selector="script"
+  duration="500"
+  hashchange
+>
+  
+  <div id="_navbar" class="navbar fixed-top">
+  <div class="content">
+    <span class="sr-only">Jump to:</span>
+    <div class="nav-btn-bar">
+      <a id="_menu" class="nav-btn no-hover" href="#_drawer--opened">
+        <span class="sr-only">Navigation</span>
+        <span class="icon-menu"></span>
+      </a>
+      <div class="nav-span"></div>
+    </div>
+  </div>
+</div>
+<hr class="sr-only" hidden />
+
+  <main
+  id="_main"
+  class="content layout-post"
+  role="main"
+>
+  
+
+
+
+
+
+<article id="post-PyRFC" class="page post mb6" role="article">
+  <header>
+    <h1 class="post-title flip-project-title">
+      
+        PyRFC - Remote Controlling SAP ABAP systems with python
+      
+    </h1>
+
+    <div class="post-date">
+      
+      <time datetime="2022-05-22T00:00:00+00:00">22 May 2022</time>
+      
+      
+      
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+      
+        <div class="lead aspect-ratio sixteen-nine flip-project-img">
+          
+
+
+<img
+  
+    src="/assets/img/blog/PyRFC/coding_1920.jpg"
+    srcset="/assets/img/blog/PyRFC/coding_1920.jpg 1920w,/assets/img/blog/PyRFC/coding_1280.jpg 960w,/assets/img/blog/PyRFC/coding_640.jpg 480w"
+    
+  
+  alt="PyRFC - Remote Controlling SAP ABAP systems with python"
+  
+  
+  width="864"
+  height="486"
+  loading="lazy"
+/>
+
+        </div>
+      
+      
+    
+
+    
+
+
+
+  
+    <p class="note-sm" >
+      Set up and run a remote function call on a BW system with pyRFC
+
+    </p>
+  
+
+
+  </header>
+
+  
+    <p>Hey there! It can be hard as a Data Scientist in a BI organization that uses SAP BW as the main data warehouse technology. All these hard earned python skills are useless when your data is locked up under a layer of application written in ABAP, SAP’s proprietary language.</p>
+
+<p>Imagine you could run ABAP modules to read and write into tables or execute functionality in a SAP Netweaver based system, all from Python. This is possible with <a href="https://github.com/SAP/PyRFC">pyRFC</a>, a python library that works as an API to SAP’s Netweaver Remote Function Call Software Development Kit (NWRFC SDK). The SDK allows developers to build programs that can call or can be called from ABAP software.</p>
+
+<h1 id="prerequisites">Prerequisites</h1>
+<ul>
+  <li>SAP RFC SDK 7.5: To download the SDK you need a SAP customer account that is usually tied to a license. The download link can be found in SAP Note 2573790, follow the link <a href="https://support.sap.com/en/product/connectors/nwrfcsdk.html">here</a>. Make sure to choose the right operating system under downloads, the dropdown is a little tricky to find.</li>
+  <li>SAP GUI for Windows: Needed for systems with Single Sign on enabled</li>
+  <li><a href="https://www.python.org/">Python</a></li>
+  <li><a href="https://cython.org/">Cython</a>: Pythons C extension, required since the SDK is a C/C++ interface</li>
+</ul>
+
+<h1 id="install-sap-netweaver-rfc-sdk-750">Install SAP NetWeaver RFC SDK 7.50</h1>
+
+<h2 id="windows">Windows</h2>
+<p>Installation is straight forward following the instructions <a href="http://sap.github.io/PyRFC/install.html">here</a>. You only have to create an env variable and extend the path.
+Env variables under windows are set permanently (written to registry) with <code class="language-plaintext highlighter-rouge">setx &lt;variable&gt;</code>. You need to restart the shell after executing. 
+Or you can use the GUI under advanced system settings –&gt; environment variables. Choose if you want to change the variables system wide or only for your user.</p>
+
+<h1 id="ubuntu">Ubuntu</h1>
+
+<p>Note: I run Ubuntu 20.04 LTS and had to install from source.</p>
+
+<p>Both python-dev and the python library Cython are a prerequisite to install from source. I install python dev with ubuntu’s package manager apt and Cython with pip.</p>
+
+<p>In bash I create a new directory  <code class="language-plaintext highlighter-rouge">mkdir /usr/local/sap/nwrfcsdk</code>. Then I set the SAPNWRFC_HOME env variable to that directory with <code class="language-plaintext highlighter-rouge">export SAPNWRFC_HOME=/usr/local/sap/nwrfcsdk</code>. To make sure that worked I run <code class="language-plaintext highlighter-rouge">echo $SAPNWRFC_HOME</code>. Next I copy the downloaded SDK into that directory and unzip it with  <code class="language-plaintext highlighter-rouge">unzip /usr/local/sap/nwrfcsdk/nwrfc750P_9-70002752.zip</code>. I move the contents of the newly created folder to its parent folder and delete the now empty nwrfcsdk folder. 
+So that python can find the libraries its important to create necessary system links. For this I add the lib folder to the path variable with <code class="language-plaintext highlighter-rouge">export PATH=$PATH:/usr/local/sap/nwrfcsdk/lib</code>.</p>
+
+<p>To update the shared libraries links and cache I follow the documentation and create a config file in /etc/ld.so.conf.d. As root:  <code class="language-plaintext highlighter-rouge">vi /etc/ld.so.conf.d/nwrfcsdk.conf</code>. And in the file I add:</p>
+
+<pre><code class="language-Shell"># include nwrfcsdk
+/usr/local/sap/nwrfcsdk/lib
+</code></pre>
+
+<p>Now as root: <code class="language-plaintext highlighter-rouge">ldconfig</code> and to check if the libraries were linked <code class="language-plaintext highlighter-rouge">ldconfig -p | grep sap</code> should show the libraries from <code class="language-plaintext highlighter-rouge">/usr/local/sap/nwrfcsdk/lib</code></p>
+
+<h1 id="install-pyrfc">Install pyRFC</h1>
+<p>Get the latest release from GitHub by checking the <a href="https://github.com/SAP/PyRFC/releases">release page</a>. At the time of writing the latest release is v2.5.0.. Installing pyRFC on Linux required me to build it from source. So I get the Source code archive with <code class="language-plaintext highlighter-rouge">git clone  https://github.com/SAP/PyRFC</code> cd into the cloned directory and run <code class="language-plaintext highlighter-rouge">python3 setup.py bdist_wheel</code>. This should also work on Windows although here I was able to pip install the wheel I got from <a href="https://github.com/SAP/PyRFC/releases/tag/v2.5.0">here</a></p>
+
+<p>To check that the installation is working, I run from python:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pyRFC</span> <span class="kn">import</span> <span class="o">*</span>
+</code></pre></div></div>
+<p>It returns nothing so I am good to go.</p>
+
+<h1 id="python-class-to-read-tables-from-a-bw">Python class to read tables from a BW</h1>
+
+<p>The class implementation is inspired by a blog post from <a href="https://startup.lwmeta.com/2020/06/09/connecting-python-with-sap-step-by-step-guide/">lwrc</a>.</p>
+
+<p>It calls <strong>RowsAtATime</strong> per batch and iterates as long as the result is larger than <strong>RowsAtATime</strong>.</p>
+
+<p>In my experience it is safe to set <strong>RowsAtATime</strong> to ~1000.</p>
+
+<p>Other important parameter are:</p>
+
+<ul>
+  <li>Fields: Allows you to specify fields as a list, the RFC module fails silently and returns no data when field is not present in table</li>
+  <li>TableName: Specify name of table you want to call, check e.g. via <a href="https://www.tcodesearch.com/">TCodeSearch</a>
+Where: Specify a where condition, sensitive to spaces around =</li>
+  <li>RowsAtATime: The number of rows you want to transfer per iteration/ batch, smaller batches might be safer but take longer</li>
+  <li>RowSkips: Number of rows to skip from the beginning of the table</li>
+</ul>
+
+<p>Note that you can check the parameters of a RFC modules with SAP transaction SE37 from SAP Logon.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">pyrfc</span> <span class="kn">import</span> <span class="n">Connection</span><span class="p">,</span> <span class="n">ABAPApplicationError</span><span class="p">,</span> <span class="n">ABAPRuntimeError</span><span class="p">,</span> <span class="n">LogonError</span><span class="p">,</span> <span class="n">CommunicationError</span>
+<span class="kn">from</span> <span class="nn">pprint</span> <span class="kn">import</span> <span class="n">PrettyPrinter</span>
+<span class="kn">from</span> <span class="nn">configparser</span> <span class="kn">import</span> <span class="n">ConfigParser</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="n">pd</span>
+<span class="c1">#Logging (not part of code below)
+# import logging
+# import logging.config
+# for timing the download
+</span><span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+
+<span class="k">class</span> <span class="nc">main</span><span class="p">():</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">config</span> <span class="o">=</span> <span class="n">ConfigParser</span><span class="p">()</span>
+            <span class="n">config</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">"sapnwrfc.cfg"</span><span class="p">)</span>
+            <span class="n">params_connection</span> <span class="o">=</span> <span class="n">config</span><span class="p">.</span><span class="n">_sections</span><span class="p">[</span><span class="s">"connection"</span><span class="p">]</span>
+            <span class="bp">self</span><span class="p">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">Connection</span><span class="p">(</span> <span class="o">**</span><span class="n">params_connection</span><span class="p">)</span>
+            
+        <span class="k">except</span> <span class="n">CommunicationError</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">"Could not connect to server."</span><span class="p">)</span>
+            <span class="k">raise</span>
+        <span class="k">except</span> <span class="n">LogonError</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">"Could not log in. Wrong credentials?"</span><span class="p">)</span>
+            <span class="k">raise</span>
+        
+    <span class="k">def</span> <span class="nf">read_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">Fields</span><span class="p">,</span> <span class="n">TableName</span><span class="p">,</span> <span class="n">Where</span> <span class="o">=</span> <span class="s">''</span><span class="p">,</span> <span class="n">RowsAtATime</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">RowSkips</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+      <span class="s">"""A function to call RFC_READ_TABLE"""</span>
+      <span class="k">try</span><span class="p">:</span>
+
+
+          <span class="c1"># Select option
+</span>          <span class="k">if</span> <span class="n">Fields</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">'*'</span><span class="p">:</span>
+              <span class="n">Fields</span> <span class="o">=</span> <span class="p">[]</span>
+          <span class="k">else</span><span class="p">:</span>
+              <span class="n">Fields</span> <span class="o">=</span> <span class="p">[{</span><span class="s">'FIELDNAME'</span><span class="p">:</span><span class="n">x</span><span class="p">}</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">Fields</span><span class="p">]</span> 
+
+          <span class="c1"># options to filter by table field
+</span>          <span class="n">options</span> <span class="o">=</span> <span class="p">[{</span><span class="s">'TEXT'</span><span class="p">:</span> <span class="n">x</span><span class="p">}</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">Where</span><span class="p">]</span> 
+
+          <span class="c1">#list that gathers the queried data
+</span>          <span class="n">l_result</span> <span class="o">=</span> <span class="p">[]</span>
+
+          <span class="c1"># RFC call
+</span>          <span class="c1"># if you want to time the download
+</span>          <span class="c1">#start_time =  datetime.datetime.now()
+</span>          <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+          <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+              <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="p">.</span><span class="n">conn</span><span class="p">.</span><span class="n">call</span><span class="p">(</span><span class="s">"RFC_READ_TABLE"</span><span class="p">,</span>
+                                  <span class="n">QUERY_TABLE</span><span class="o">=</span><span class="n">TableName</span><span class="p">,</span> <span class="c1">#
+</span>                                  <span class="n">DELIMITER</span><span class="o">=</span><span class="s">'|'</span><span class="p">,</span>
+                                  <span class="n">FIELDS</span> <span class="o">=</span> <span class="n">Fields</span><span class="p">,</span>  
+                                  <span class="n">OPTIONS</span><span class="o">=</span><span class="n">options</span><span class="p">,</span>
+                                  <span class="n">ROWCOUNT</span> <span class="o">=</span> <span class="n">RowsAtATime</span><span class="p">,</span>
+                                  <span class="n">ROWSKIPS</span><span class="o">=</span><span class="n">RowSkips</span><span class="p">,</span>
+                                  <span class="c1">#ET_DATA_RETURN is somehow needed to export sstring data types, 
+</span>                                  <span class="n">USE_ET_DATA_4_RETURN</span><span class="o">=</span><span class="s">"X"</span><span class="p">)</span>
+              <span class="n">RowSkips</span> <span class="o">+=</span> <span class="n">RowsAtATime</span>
+
+              <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">'ET_DATA'</span><span class="p">])):</span>
+                  <span class="c1">#only append list to list not the returned dictionary
+</span>                  <span class="n">l_result</span><span class="p">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">'ET_DATA'</span><span class="p">][</span><span class="n">line</span><span class="p">][</span><span class="s">"LINE"</span><span class="p">].</span><span class="n">strip</span><span class="p">())</span>
+
+              <span class="n">headers</span> <span class="o">=</span>  <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s">'FIELDNAME'</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">result</span><span class="p">[</span><span class="s">'FIELDS'</span><span class="p">]]</span>  
+              <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">'ET_DATA'</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">RowsAtATime</span><span class="p">:</span>
+                  <span class="k">break</span>
+          <span class="n">l_result</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">.</span><span class="n">strip</span><span class="p">().</span><span class="n">split</span><span class="p">(</span><span class="s">'|'</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">l_result</span> <span class="p">]</span>
+          <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="p">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">l_result</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">headers</span><span class="p">)</span>
+      <span class="k">except</span> <span class="p">(</span><span class="n">ABAPApplicationError</span><span class="p">,</span> <span class="n">ABAPRuntimeError</span><span class="p">):</span>
+          <span class="k">print</span><span class="p">(</span><span class="s">"An error occurred."</span><span class="p">)</span>
+          <span class="k">raise</span>
+
+        <span class="c1"># logging example
+</span>        <span class="c1"># self.logger.info( "Download time - {0} download took --- {1} seconds ---".format(TableName,datetime.datetime.now()- start_time ))
+</span>
+      <span class="k">return</span> <span class="n">df</span>
+
+</code></pre></div></div>
+
+<h2 id="exemplary-config">Exemplary config</h2>
+
+<p>Exemplary config for connecting to a SAP Netweaver system:</p>
+
+<div class="language-yaml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="pi">[</span><span class="nv">connection</span><span class="pi">]</span>
+<span class="c1">#For a definition of parameters check: https://docs.oracle.com/cd/E19509-01/820-5064/ggrpj/index.html</span>
+
+<span class="c1">#For productive systems use message server:</span>
+<span class="c1">#mshost=&lt;FQDN&gt;</span>
+<span class="c1">#else directly connect to the application sever:</span>
+<span class="s">ashost=&lt;FQDN&gt;</span>
+
+<span class="s">sysnr= &lt;SysNr, e.g. 00&gt;</span>
+<span class="s">sysid=&lt;SysID&gt;</span>
+<span class="s">client= &lt;ClientID e.g. 100&gt;</span>
+
+<span class="c1">#for user, password based authentication, not working when SNC is enabled:</span>
+<span class="c1">#user= </span>
+<span class="c1">#passwd=</span>
+
+<span class="c1"># Find parameters in logon or eclipse:</span>
+<span class="s">snc_partnername=&lt;SAP Server SNC name, e.g.  p:CN=EC7, O=SAP, C=US, OU=SAP&gt;</span>
+<span class="s">snc_myname= p:CN=&lt;user&gt;</span>
+<span class="s">snc_qop= &lt;the quality of the protection level, e.g. 9&gt;</span>
+<span class="c1">#language for connection (DE/EN):</span>
+<span class="s">lang= EN</span>
+
+</code></pre></div></div>
+
+  
+</article>
+
+
+<hr class="dingbat related" />
+
+
+
+
+  
+     
+
+
+  <aside class="about related mt4 mb4" role="complementary">
+    
+    
+
+<div class="author mt4">
+  
+
+  
+
+  
+  
+  <h2  class="page-title hr-bottom">
+    About
+  </h2>
+
+  <p>Hey, I am Jan.
+I am an Advanced Analytics/ BI Consultant turned Data Management enthusiast.
+I love to dive into new technologies. I am currently working for Mercedes-Benz.</p>
+
+
+  <div class="sidebar-social">
+    <span class="sr-only">Social:</span>
+<ul>
+  
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="mailto:jye9pyu5g@mozmail.com" title="Email" class="no-mark-external">
+      <span class="icon-mail"></span>
+      <span class="sr-only">Email</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.linkedin.com/in/jan-tatzel-42369a182" title="LinkedIn" class="no-mark-external">
+      <span class="icon-linkedin2"></span>
+      <span class="sr-only">LinkedIn</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.xing.com/profile/Jan_Tatzel" title="XING" class="no-mark-external">
+      <span class="icon-xing2"></span>
+      <span class="sr-only">XING</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://github.com/JaTat" title="GitHub" class="no-mark-external">
+      <span class="icon-github"></span>
+      <span class="sr-only">GitHub</span>
+    </a>
+  </li>
+
+
+    
+  
+</ul>
+
+  </div>
+</div>
+
+  </aside>
+
+
+  
+
+  
+  
+
+  
+    
+
+
+  <aside class="related mb4" role="complementary">  <h2 class="hr-bottom">Related Posts</h2>  <ul class="related-posts">                  <li class="h4">  <a href="/2023-01-06-Metabase/" class="flip-title"><span>Metabase - BI on ERPnext</span></a>  <time class="faded fine" datetime="2023-01-06T00:00:00+00:00">06 Jan 2023</time></li>                        <li class="h4">  <a href="/2022-01-02-FossErp/" class="flip-title"><span>FOSS ERP - Setting up and playing around with ERPNext</span></a>  <time class="faded fine" datetime="2022-01-02T00:00:00+00:00">02 Jan 2022</time></li>                        <li class="h4">  <a href="/2021-09-19-BWODataServices/" class="flip-title"><span>OData Services in SAP BW/4 from a HANA table</span></a>  <time class="faded fine" datetime="2021-09-19T00:00:00+00:00">19 Sep 2021</time></li>            </ul></aside>
+
+  
+
+  
+  
+
+  
+    
+
+  
+
+
+  
+<footer class="content" role="contentinfo">
+  <hr/>
+  
+    <p><small class="copyright">© 2020. All rights reserved.
+</small></p>
+  
+  
+    <nav class="legal"><small>
+    
+      
+      <a class="heading flip-title" href="/LICENSE/">LICENSE</a>
+      |
+    
+      
+      <a class="heading flip-title" href="/IMPRESSUM/">IMPRESSUM</a>
+      
+    
+    </small></nav>
+  
+    <p><small>Powered by <a class="external" href="https://hydejack.com/">Hydejack</a> v<span id="_version">9.0.4</span></small></p>
+  <hr class="sr-only"/>
+</footer>
+
+
+</main>
+
+  <hy-drawer
+  id="_drawer"
+  class=""
+  side="left"
+  threshold="10"
+  noscroll
+  
+>
+  <header id="_sidebar" class="sidebar" role="banner">
+    
+
+
+
+
+<div class="sidebar-bg sidebar-overlay" style="background-color:rgb(8,46,57);background-image:url(/assets/img/street@0.8x.jpg)"></div>
+
+    <div class="sidebar-sticky">
+  <div class="sidebar-about">
+    
+      <a class="no-hover" href="/" tabindex="-1">
+        <img src="/assets/img/Jan_rund_small.jpg" class="avatar" alt="Jan Tatzel" width="120" height="120" loading="lazy" />
+      </a>
+    
+    <a class="sidebar-title" href="/"><h2 class="h1">Jan Tatzel</h2></a>
+    
+    
+      <p class="">
+        Hey there!
+
+      </p>
+    
+  </div>
+
+  <nav class="sidebar-nav heading" role="navigation">
+    <span class="sr-only">Navigation:</span>
+<ul>
+  
+    
+      
+      <li>
+        <a
+          id="_drawer--opened"
+          href="/"
+          class="sidebar-nav-item"
+          
+        >
+          Blog
+        </a>
+      </li>
+    
+      
+      <li>
+        <a
+          
+          href="/about/"
+          class="sidebar-nav-item"
+          
+        >
+          About me
+        </a>
+      </li>
+    
+  
+</ul>
+
+  </nav>
+
+  
+  <div class="sidebar-social">
+    <span class="sr-only">Social:</span>
+<ul>
+  
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="mailto:jye9pyu5g@mozmail.com" title="Email" class="no-mark-external">
+      <span class="icon-mail"></span>
+      <span class="sr-only">Email</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.linkedin.com/in/jan-tatzel-42369a182" title="LinkedIn" class="no-mark-external">
+      <span class="icon-linkedin2"></span>
+      <span class="sr-only">LinkedIn</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.xing.com/profile/Jan_Tatzel" title="XING" class="no-mark-external">
+      <span class="icon-xing2"></span>
+      <span class="sr-only">XING</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://github.com/JaTat" title="GitHub" class="no-mark-external">
+      <span class="icon-github"></span>
+      <span class="sr-only">GitHub</span>
+    </a>
+  </li>
+
+
+    
+  
+</ul>
+
+  </div>
+</div>
+  </header>
+</hy-drawer>
+<hr class="sr-only" hidden />
+
+</hy-push-state>
+
+
+  <!--[if gt IE 10]><!---->
+  <script nomodule>!function(){var e=document.createElement("script");if(!("noModule"in e)&&"onbeforeload"in e){var t=!1;document.addEventListener("beforeload",function(n){if(n.target===e)t=!0;else if(!n.target.hasAttribute("nomodule")||!t)return;n.preventDefault()},!0),e.type="module",e.src=".",document.head.appendChild(e),e.remove()}}();
+</script>
+  <script src="/assets/js/hydejack-9.0.4.js" type="module"></script>
+  <script src="/assets/js/LEGACY-hydejack-9.0.4.js" nomodule defer></script>
+  
+
+  
+
+<!--<![endif]-->
+  
+
+
+
+<div hidden>
+  
+  <h2 class="sr-only">Templates (for web app):</h2>
+
+  <template id="_animation-template">
+  <div class="animation-main fixed-top">
+    <div class="content">
+      <div class="page"></div>
+    </div>
+  </div>
+</template>
+
+  <template id="_loading-template">
+  <div class="loading nav-btn fr">
+    <span class="sr-only">Loading…</span>
+    <span class="icon-cog"></span>
+  </div>
+</template>
+
+  <template id="_error-template">
+  <div class="page">
+    <h1 class="page-title">Error</h1>
+    
+    
+    <p class="lead">
+      Sorry, an error occurred while loading <a class="this-link" href=""></a>.
+
+    </p>
+  </div>
+</template>
+
+  <template id="_forward-template">
+  <button id="_forward" class="forward nav-btn no-hover">
+    <span class="sr-only">Forward</span>
+    <span class="icon-arrow-right2"></span>
+  </button>
+</template>
+
+  <template id="_back-template">
+  <button id="_back" class="back nav-btn no-hover">
+    <span class="sr-only">Back</span>
+    <span class="icon-arrow-left2"></span>
+  </button>
+</template>
+
+  <template id="_permalink-template">
+  <a href="#" class="permalink">
+    <span class="sr-only">Permalink</span>
+    <span class="content-hash"></span>
+  </a>
+</template>
+
+</div>
+
+
+</body>
+</html>

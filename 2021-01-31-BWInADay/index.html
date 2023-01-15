@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en"><!--
+ __  __                __                                     __
+/\ \/\ \              /\ \             __                    /\ \
+\ \ \_\ \   __  __    \_\ \      __   /\_\      __       ___ \ \ \/'\
+ \ \  _  \ /\ \/\ \   /'_` \   /'__`\ \/\ \   /'__`\    /'___\\ \ , <
+  \ \ \ \ \\ \ \_\ \ /\ \L\ \ /\  __/  \ \ \ /\ \L\.\_ /\ \__/ \ \ \\`\
+   \ \_\ \_\\/`____ \\ \___,_\\ \____\ _\ \ \\ \__/.\_\\ \____\ \ \_\ \_\
+    \/_/\/_/ `/___/> \\/__,_ / \/____//\ \_\ \\/__/\/_/ \/____/  \/_/\/_/
+                /\___/                \ \____/
+                \/__/                  \/___/
+
+Powered by Hydejack v9.0.4 <https://hydejack.com/>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+  
+
+
+
+
+
+
+  
+    
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Learning SAP BW/4HANA | Jan Tatzel</title>
+<meta name="generator" content="Jekyll v4.2.0" />
+<meta property="og:title" content="Learning SAP BW/4HANA" />
+<meta name="author" content="Jan Tatzel" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Learning Data Modelling in SAP BW/4 in a day" />
+<meta property="og:description" content="Learning Data Modelling in SAP BW/4 in a day" />
+<link rel="canonical" href="https://jantatzel.com/2021-01-31-BWInADay/" />
+<meta property="og:url" content="https://jantatzel.com/2021-01-31-BWInADay/" />
+<meta property="og:site_name" content="Jan Tatzel" />
+<meta property="og:image" content="https://jantatzel.com/assets/img/blog/BWInADay/board-2440249_1280.jpg" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-01-31T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://jantatzel.com/assets/img/blog/BWInADay/board-2440249_1280.jpg" />
+<meta property="twitter:title" content="Learning SAP BW/4HANA" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Jan Tatzel"},"description":"Learning Data Modelling in SAP BW/4 in a day","url":"https://jantatzel.com/2021-01-31-BWInADay/","@type":"BlogPosting","headline":"Learning SAP BW/4HANA","dateModified":"2021-01-31T00:00:00+00:00","datePublished":"2021-01-31T00:00:00+00:00","image":{"srcset":{"1920w":"/assets/img/blog/BWInADay/board-2440249_1280.jpg","960w":"/assets/img/blog/BWInADay/board-2440249_640.jpg","480w":"/assets/img/blog/BWInADay/board-2440249_320.jpg"},"url":"https://jantatzel.com/assets/img/blog/BWInADay/board-2440249_1280.jpg","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://jantatzel.com/2021-01-31-BWInADay/"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://jantatzel.com/assets/img/Jan_rund_small.jpg"},"name":"Jan Tatzel"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  
+
+  
+    <meta name="keywords" content="Jan Tatzel,personal page,about me">
+  
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jan Tatzel">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<meta name="application-name" content="Jan Tatzel">
+
+
+  <meta name="theme-color" content="rgb(8,46,57)">
+
+
+<meta name="generator" content="Hydejack v9.0.4" />
+
+
+<link rel="alternate" href="https://jantatzel.com/2021-01-31-BWInADay/" hreflang="en">
+
+<link type="application/atom+xml" rel="alternate" href="https://jantatzel.com/feed.xml" title="Jan Tatzel" />
+
+
+<link rel="shortcut icon"    href="/assets/icons/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/icons/icon-192x192.png">
+
+<link rel="manifest" href="/assets/site.webmanifest">
+
+
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+
+
+
+
+<link rel="preload" href="/assets/img/swipe.svg" as="image" id="_hrefSwipeSVG">
+
+
+
+
+
+
+<script>!function(e,t){"use strict";function n(e,t,n,o){e.addEventListener?e.addEventListener(t,n,o):e.attachEvent?e.attachEvent("on"+t,n):e["on"+t]=n}e.loadJS=function(e,o){var r=t.createElement("script");r.src=e,o&&n(r,"load",o,{once:!0});var a=t.scripts[0];return a.parentNode.insertBefore(r,a),r},e._loaded=!1,e.loadJSDeferred=function(o,r){function a(){e._loaded=!0,r&&n(c,"load",r,{once:!0});var o=t.scripts[0];o.parentNode.insertBefore(c,o)}var c=t.createElement("script");return c.src=o,e._loaded?a():n(e,"load",a,{once:!0}),c},e.setRel=e.setRelStylesheet=function(e){function o(){this.rel="stylesheet"}n(t.getElementById(e),"load",o,{once:!0})}}(window,document);
+!function(a){"use strict";var b=function(b,c,d){function e(a){return h.body?a():void setTimeout(function(){e(a)})}function f(){i.addEventListener&&i.removeEventListener("load",f),i.media=d||"all"}var g,h=a.document,i=h.createElement("link");if(c)g=c;else{var j=(h.body||h.getElementsByTagName("head")[0]).childNodes;g=j[j.length-1]}var k=h.styleSheets;i.rel="stylesheet",i.href=b,i.media="only x",e(function(){g.parentNode.insertBefore(i,c?g:g.nextSibling)});var l=function(a){for(var b=i.href,c=k.length;c--;)if(k[c].href===b)return a();setTimeout(function(){l(a)})};return i.addEventListener&&i.addEventListener("load",f),i.onloadcssdefined=l,l(f),i};"undefined"!=typeof exports?exports.loadCSS=b:a.loadCSS=b}("undefined"!=typeof global?global:this);
+!function(a){if(a.loadCSS){var b=loadCSS.relpreload={};if(b.support=function(){try{return a.document.createElement("link").relList.supports("preload")}catch(b){return!1}},b.poly=function(){for(var b=a.document.getElementsByTagName("link"),c=0;c<b.length;c++){var d=b[c];"preload"===d.rel&&"style"===d.getAttribute("as")&&(a.loadCSS(d.href,d,d.getAttribute("media")),d.rel=null)}},!b.support()){b.poly();var c=a.setInterval(b.poly,300);a.addEventListener&&a.addEventListener("load",function(){b.poly(),a.clearInterval(c)}),a.attachEvent&&a.attachEvent("onload",function(){a.clearInterval(c)})}}}(this);
+!function(w) {
+  w._baseURL = '/';
+  w._publicPath = '/assets/js/';
+  w._noPushState = false;
+  w._noDrawer = false;
+  w._noNavbar = false;
+  w._noToc = false;
+  w._noSearch = false;
+}(window);
+</script>
+
+
+
+<!--[if gt IE 8]><!---->
+
+  
+
+
+
+
+<link rel="stylesheet" href="/assets/css/hydejack-9.0.4.css" id="_stylePreload">
+<link rel="stylesheet" href="/assets/icomoon/style.css" id="_iconsPreload">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700%7CNoto+Sans:400,400i,700,700i&display=swap" id="_fontsPreload">
+
+
+
+  <style id="_pageStyle">
+
+html{--accent-color: rgb(79,177,186);--accent-color-faded: rgba(79,177,186,0.5);--accent-color-darkened: #409ba3;--theme-color: rgb(8,46,57)}
+
+</style>
+
+
+<!--<![endif]-->
+
+
+
+
+
+</head>
+
+<body class="no-break-layout">
+  
+
+
+<hy-push-state
+  id="_pushState"
+  replace-selector="#_main"
+  link-selector="a[href]:not([href^='/assets/']):not(.external):not(.no-push-state)"
+  script-selector="script"
+  duration="500"
+  hashchange
+>
+  
+  <div id="_navbar" class="navbar fixed-top">
+  <div class="content">
+    <span class="sr-only">Jump to:</span>
+    <div class="nav-btn-bar">
+      <a id="_menu" class="nav-btn no-hover" href="#_drawer--opened">
+        <span class="sr-only">Navigation</span>
+        <span class="icon-menu"></span>
+      </a>
+      <div class="nav-span"></div>
+    </div>
+  </div>
+</div>
+<hr class="sr-only" hidden />
+
+  <main
+  id="_main"
+  class="content layout-post"
+  role="main"
+>
+  
+
+
+
+
+
+<article id="post-BWInADay" class="page post mb6" role="article">
+  <header>
+    <h1 class="post-title flip-project-title">
+      
+        Learning SAP BW/4HANA
+      
+    </h1>
+
+    <div class="post-date">
+      
+      <time datetime="2021-01-31T00:00:00+00:00">31 Jan 2021</time>
+      
+      
+      
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+      
+        <div class="lead aspect-ratio sixteen-nine flip-project-img">
+          
+
+
+<img
+  
+    src="/assets/img/blog/BWInADay/board-2440249_1280.jpg"
+    srcset="/assets/img/blog/BWInADay/board-2440249_1280.jpg 1920w,/assets/img/blog/BWInADay/board-2440249_640.jpg 960w,/assets/img/blog/BWInADay/board-2440249_320.jpg 480w"
+    
+  
+  alt="Learning SAP BW/4HANA"
+  
+  
+  width="864"
+  height="486"
+  loading="lazy"
+/>
+
+        </div>
+      
+      
+    
+
+    
+
+
+
+  
+    <p class="note-sm" >
+      Learning Data Modelling in SAP BW/4 in a day
+
+    </p>
+  
+
+
+  </header>
+
+  
+    <p>Hey there!
+I attempt to learn SAP BW/4 in a day. As with any tool my preferred way of learning is hands-on. So I will set up a BW/4 and model some data objects. This is not necessarily meant as a tutorial to follow along. I will certainly make mistakes and meet some dead ends. Anyways I am sure it will be fun! So follow me along on my attempt to learn BW in a day.</p>
+
+<h2 id="what-is-bw4">What is BW/4?</h2>
+
+<p>SAP BW/4HANA is often used as a corporate analytical Data Warehouse. The BW application has matured since 1998. It comes with its own vocabulary, learning ressources and legions of experts. 
+BW/4 is SAP’s packaged Business Warehouse application running on SAP’s proprietary in-memory HANA database. HANA offers the option to store tables column- or row-wise. Column-wise is preferred for OLAP since it speeds up filtering and aggregations. BW is more than a database it is a whole Data Management solution. It is built on SAP’s proprietary technology stack SAP Netweaver which in turn is built mainly on SAP’s own programming language ABAP. Why would you opt for so much proprietary stuff? Apparently, every other setup makes retrieving data from SAP’s ERP system really hard. And after all, this is where a large junk of the data that someone typically wants to analyze in a BW comes from.</p>
+
+<p>In the non-SAP world you could probably use Python and a scheduler like Airflow + any RDBMS. If you are fancy you can add a graphical monitoring tool such as grafana in conjunction with prometheus. Or you use fivetran to build the pipelines or Pentaho or really anything you please.</p>
+
+<p>To my ears that sounds a bit like Apple vs. Android: A tightly integrated ecosystem vs. something more modular and open. This leads to my first expectation towards BW. As with apple’s stuff I expect that things just work as long as you stay with in the fenced off perimeter.</p>
+
+<h2 id="my-expectations-for-the-setup">My expectations for the setup</h2>
+
+<p>Coming from a Data Science tool stack I am relatively familiar with Relational Database Management Systems (RDBMS) such as PostgreSQL, MySQL, SQLite etc… Hands-on learning with these RDBMS is really straight forward. Simply add a preconfigured dockerfile to your project directory via VSCode and run the container. In total these are 4 or 5 clicks. To be fair this assumes you have Docker, Microsoft VSCode and the Remote Containers Extension set up.
+This leads to my second expecation: The Set up for Hands-on learning, prototyping etc. should be easy.</p>
+
+<p>I found this blog <a href="https://blogs.sap.com/2018/08/29/bw4hana-modeling-scenario-step-by-step/">BW/4HANA Modeling Scenario Step by Step</a> which I intend to roughly follow.
+I have the <a href="https://www.eclipse.org/downloads/packages/release/2020-09/r">Eclipse IDE 2020-09</a> and <a href="https://tools.hana.ondemand.com/">Hana Modeling tools</a> already. All I need now is a BW instance to start modelling.</p>
+
+<h2 id="setting-up-a-development-instance">Setting up a development instance</h2>
+
+<p>Unfortunately there is no easy way to set up a local development instance using a Container or VM engine. Whilst there is a HANA express edition on Dockerhub there is no BW. Luckily SAP has its own cloud provisioning portal that I can use to set up a BW instance with HANA some preconfigured content and a Windows VM with development tools.</p>
+
+<h3 id="1-create-a-cal-account-and-connect-your-cloud-subscription">1. Create a CAL account and connect your cloud subscription</h3>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/0_ConnectAccount.jpg" alt="Set up CAL" class="lead" width="1200" height="893" loading="lazy" />
+Connect CAL to Azure or AWS</p>
+<p>I create an account in the <a href="https://cal.sap.com/">SAP Cloud Applicance Library (CAL)</a> and connect it to my Azure subscription by giving it an arbitraty name, adding my Subscription Id and the Standard Authorization Method. See <a href="https://calstatic.hana.ondemand.com/res/~1608207188665~/docEN/042bb15ad2324c3c9b7974dbde389640.html">here</a> for a detailed documentation how to add your cloud subscription to your CAL account.</p>
+
+<h3 id="2-provision-your-bw4hana-instance">2. Provision your BW/4HANA instance</h3>
+
+<p>Now I head over to the Solutions screen and search for BW/4. I choose the Developer edition which comes with a free Developer license. The only costs are the costs that Azure charges me for the VMs.
+As you can see below I provision my instance on Azure. The initial setup takes around 60 minutes so after creating the instance and storing the private key in a secure location its time to get a coffee.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/1_Provision.jpg" alt="Provisioning" class="lead" width="1200" height="893" loading="lazy" />
+Provisioning</p>
+
+<h3 id="3-connect-to-the-instance">3. Connect to the instance</h3>
+
+<p>At first I head over to the Azure Portal to see what was installed.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/2_Azure-Ressources.jpg" alt="Installed ressources" class="lead" width="1200" height="893" loading="lazy" />
+Installed Ressources</p>
+
+<p>Quite a few things were provisioned. In total I now have 2 VMs one Linux suse 12 which acts as the database and application server and a Windows VM with pre-installed modelling tools. I also see a few attached discs, and a virtual network for the Windows and Linux machine. Both are also exposed to the Internet which I can see either in my CAL overview or in your Azure portal.</p>
+
+<p>Now I check what is running on the BW server. For this I need PUTTY. I had to convert the .pem key I downloaded earlier to a .ppk using PUTTYGen. I save the private key somewhere save and add it to my PUTTY connection configuration under SSH, Auth. According to the Getting started guide that I found on the CAL instance overview the Linux user is <strong>root</strong></p>
+
+<p>I check the exposed services with <code class="language-plaintext highlighter-rouge">netstat -tulpn</code> and boy there is a lot going on. You can see below that the SAP Webdispatcher is listening on ports in the 50000 range as well as the Hana Database (hdb) on local ports. According to the documentation the Webdispatcher seems to be a webserver and remote proxy that has functionality similiar to e.g. nginx <a href="https://help.sap.com/doc/7b5ec370728810148a4b1a83b0e91070/1511%20002/en-US/frameset.htm?frameset.htm">see here for details</a>. It can rewrite and filter URLs, act as load balancer if you have multiple application servers and SSL termination point.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/3_Services.jpg" alt="Exposed services" class="lead" width="1200" height="893" loading="lazy" />
+Exposed services</p>
+
+<h4 id="the-database">The Database</h4>
+
+<p>Since Hana is already running I have a quick look into the database. For this I use the hdbsql command line tool which is located under <code class="language-plaintext highlighter-rouge">/usr/sap/&lt;SID&gt;/HDB&lt;instance&gt;/exe</code>. SID is “HDB” and instance is “02”. I found these values in the Getting started guide.</p>
+
+<p>With <code class="language-plaintext highlighter-rouge">hdbsql -i 02 -n localhost:30213</code> I was able to connect to the database. <code class="language-plaintext highlighter-rouge">SELECT * FROM TABLES;</code> shows the available tables. I was asked to enter my user “SYSTEM” and the password I entered during instance creation in the CAL. I found that there are only system tables available that did not make a lot of sense for me. But a first success, the connection to the database is established. I also quickly check whether I can connect from my local machine to the database. For this I used <a href="https://dbeaver.io/">DBeaver</a>, the database is also exposed to the internet. The user and password are the same, the IP is the external IP shown in your CAL instance details.
+I discovered while reading the Security Aspects (!) of the Getting Started guide that on port 30241 the tenant DB of the ABAP system is exposed. I assume this is what BW uses. But also in this database I only find a huge range of (&gt;30000 in the SAPHANADB schema) system tables.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/8_HANATABLES.jpg" alt="Hana Tables" class="lead" width="1200" height="893" loading="lazy" />
+A lot of tables even before I added any data</p>
+
+<h2 id="setting-up-hana-modelling-tools">Setting up HANA Modelling tools</h2>
+
+<p>Now let’s get started for real. I change to the BW Modelling view with a click on the highlighted button below.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/4_ModellingPerspective.jpg" alt="Modelling view" class="lead" width="1200" height="893" loading="lazy" />
+Modelling view</p>
+
+<p>Then I create a new BW project. I receive an error that SAP GUI is not setup. GUI is another graphical administration client. Before ecilpse it was also used for data modelling. I don’t have it and hope I don’t need it so I ignore the error message.</p>
+
+<p>Now I have to enter the connection credentials. In the dropdown I can choose between the preselected Group Selection and Custom Application server. Since I dont know what my Message Server or my group is supposed to be I chose Custom Application Server. There I enter the system ID and the Instance number both from the getting started Guide and the application server IP from CAL. On the next page I enter user = “DEVELOPER” and the password I entered during provisioning. And … I get an error. After trying different settings for instance number and Client. I check the port that the modelling tools try to connect to against what is configured in Azure. And well the 3300 port is not opened. I add the port to the network configuration. Now it returns an authentication error. After a bit of trial and error I find out that the DDIC user works.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/5_Connection.jpg" alt="Connection" class="lead" width="1200" height="893" loading="lazy" />
+Connection</p>
+
+<p>Cool, I have a working connection. I still wonder why the setup processes is not described in the Getting Started guide. Maybe on the Windows VM that was spawned with the application and database server everyting is set up already for me? I try to connect but can’t figure out the user name. It is none of the OS user names listed in the Getting started guide and also not the ssh user name Azure returns in the connection tab. So I reset the user via Azure portal and log on. On the VM SAP GUI and Lumira are preinstalled. Unfortunately there is no Eclipse Modelling tools. And even more unfortunate is that the SAP GUI is also not configured. So again with some trial and error I enter the connection information as below:</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/6_SAPGui.jpg" alt="ConnectionGUI" class="lead" width="1200" height="893" loading="lazy" />
+Connection SAP GUI</p>
+
+<p>For the application server it should also be possible to use the internal IP as shown in CAL or Azure Portal. I use the host name as returned by <code class="language-plaintext highlighter-rouge">sapcontrol -nr 00 -function GetSystemInstanceList</code> from the Bash on my Application server.</p>
+
+<p>I dont know if I need SAP GUI for anything. The Getting Started guide mentions some set up transactions needed for setting up the BW/4HANA Client but also says that they are already done for the developer edition. I bravely assume that I have the developer edition. This is also the point where I stop my Windows VM to safe some money.</p>
+
+<p>Okay now I have everything connected, took me only a couple of hours phew….</p>
+
+<h2 id="creating-a-data-flow">Creating a Data Flow</h2>
+
+<p>In the BW-Repository I want to create a new InfoArea. This is the folder that all my data objects will live in. Right clicking a folder, new and InfoArea opens a context menu where I can enter the name and description of the area. But bummer… my user DDIC apparently has not the rights to create an InfoArea. After waisting time by trying to reconfigure or copy my project I simply create a new one and after with some more trial and error I find out that user DEVELOPER is set up on Client 001. What a joy, I created an InfoArea.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/7_NewInfoArea.jpg" alt="InfoArea" class="lead" width="1200" height="893" loading="lazy" />
+InfoArea</p>
+
+<p>Now I need a data flow to model my data. A right click on the InfoArea I created in the step before, selecting new and then Data Flow opens a context menu. Here I can only choose the name of the Data Flow.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/9_CREATINGDATAFLOW.jpg" alt="DataFlow" class="lead" width="1200" height="893" loading="lazy" />
+DataFlow</p>
+
+<p>I notice that in the InfoArea area tree on the left side no objects are shown, weird…. This is an issue since I can’t drag and drop already created Data Objects or select them once I closed the context menu.</p>
+
+<h3 id="reconfigure-the-address-of-the-project-server">Reconfigure the address of the project server</h3>
+
+<p>After my VM had an auto shutdown and the IP adress changed I had to reconfigure the IP address. After waisting some minutes searching for a context menu I find the .destination.properties file in the project navigation tree. There I can change the IP address. After restarting eclipse I was able to connect again. This only works though when project ist still opened. If not then you have to find your project working directory e.g.<code class="language-plaintext highlighter-rouge">C:\Users\&lt;USER&gt;\workspace\.metadata\.plugins\org.eclipse.core.resources.semantic\.cache\&lt;PROJECT_NAME&gt;\destination.properties</code>, weird right?</p>
+
+<h3 id="creating-a-data-source-and-upload-a-csv">Creating a Data Source and upload a csv</h3>
+
+<p>In my Data Flow I drag and drop the Source System to the Modelling window just to find out that I do not have a source system configured.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/10_DataSource.jpg" alt="DataSource" class="lead" width="1200" height="893" loading="lazy" />
+Adding a Data Source</p>
+
+<p>In the navigation tree on the left I right-click on Data source and add a new one. Now some trial and error and a google search tells me that I then have to again right click on the created data source, new and add DataSource. Here I run into a problem. After selecting None as my template I am asked to select an Application Component. I assume this is the program that allows me to ingest a file. But my system does not show me any…</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/11_NoAppComponent.jpg" alt="AppComp" class="lead" width="1200" height="893" loading="lazy" />
+No application component</p>
+
+<p>So maybe I have to run the system set up transactions after all….</p>
+
+<h3 id="detour-set-up-transaction-in-sap-gui">Detour Set up transaction in SAP GUI</h3>
+
+<p>Heading back to the Windows VM with SAP GUI I connect and execute transaction <code class="language-plaintext highlighter-rouge">STC01</code> in the search like window on the top left. Then I enter <code class="language-plaintext highlighter-rouge">SAP_BW4_SETUP_SIMPLE</code> and click on view tasklist.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/12_SetupTrans.jpg" alt="SetupTrans" class="lead" width="1200" height="893" loading="lazy" />
+“easy” Set up transaction</p>
+
+<p>I see all the steps in the tasklist but apparently its still not running.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/13_SetupTrans2.jpg" alt="SetupTrans2" class="lead" width="1200" height="893" loading="lazy" />
+Task list</p>
+
+<p>Under More I can start the list but immediately get an error. A parameter in the first task seems to be missing. After some searching, I find out that I can add parameters in the task list shown above by clicking on a symbol in the column on the right. Here I have to add the Master Password and the same I have to do for another task below. I check all tasks that contain parameters but only two require the password.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/14_AddParameters.jpg" alt="Add Parameters" class="lead" width="1200" height="893" loading="lazy" />
+Add Parameters</p>
+
+<p>And yay, everything is running and green!
+Since I am already here I run the second task list which enables the BW 4 Launchpad, which I assume to be a Web application giving access to reports with the tas list <code class="language-plaintext highlighter-rouge">SAP_BW4_LAUNCHPAD_SETUP</code>. Nothing to configure here.</p>
+
+<h3 id="back-to-eclipse">Back to eclipse</h3>
+
+<p>Back in eclipse I find that this did not change the application component situation, so the entire detour had no effect.
+At least I can now access the Launchpad from the Windows VM under <code class="language-plaintext highlighter-rouge">https://vhcala4hci.dummy.nodomain:54430/sap/bc/ui5_ui5/ui2/ushell/shells/abap/FioriLaunchpad.html?sap-client=001&amp;sap-language=EN#Shell-home</code>. It somehow does not work from my local machine even when substituting the domain name with the external IP adress and opening up the port in Azure. But hey who is going to be picky here.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/16_FioriLaunchpad.jpg" alt="Launchpad" class="lead" width="1200" height="893" loading="lazy" />
+Launchpad running</p>
+
+<p>I am happy that it runs at all, even though this did not bring me closer to my goal of modelling a data flow. So I head back to google.</p>
+
+<h2 id="what-the-heck-is-an-application-component">What the heck is an application component?</h2>
+
+<p>It seems my assumption that the application component is some sort of ingestion program that needs to be added to the backend is not correct. Another google search returns the following from the official SAP documentation:</p>
+
+<p>“An application component is a modeling construct within a process integration scenario. From a logical point of view, it represents a participant of a process integration scenario. This contains the business tasks and concerns that this participant represents within the process integration scenario.
+An application component can stand for a business partner or a component of a business partner. At runtime it would be either one or more business systems or a integration process.”</p>
+
+<p>I really dont understand what they are trying to tell me and how this is connected with me loading data into the data base….
+But more googling and trial and error leads me to another right click this time on my Data Source where I can create an Application component. Now I can add this application component to my Data Source and yay it works. Now I can configure my data source</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/17_DataSource.jpg" alt="Data Source" class="lead" width="1200" height="893" loading="lazy" />
+Well hidden extraction tab</p>
+
+<p>After that it literally took me half an hour to find this hidden extraction tab at the very bottom. Whilst I assumed that something was not configured right. Well maybe I am just tired.</p>
+
+<p>In the extraction tab I can select the file, configure the separator and header and even infer the schema. This is the highlight of my day!</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/19_DataSourceSettings.jpg" alt="Data Source Settings" class="lead" width="1200" height="893" loading="lazy" />
+Settings of the Data Source</p>
+
+<p>After I activated the object in the menu bar I can see the data, on the right!</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/18_DataSourceCreated.jpg" alt="Finally" class="lead" width="1200" height="893" loading="lazy" />
+Finally data in the system!</p>
+
+<h3 id="date-conversion">Date conversion</h3>
+
+<p>Currently birthdate is saved as a string since in my input csv the date is stored as dd.mm.yyyy. I want to convert it to a DATS, the BW date format. BW usually saves dates as yyyymmdd. So back to the Data Source settings.</p>
+
+<p>In the tab fields i find the setting conversion routines which offers me a long list of cryptic routines. “Conversion exit for domain GBDAT” again I am a bit lost. I was hoping for something along the lines of the C standard <code class="language-plaintext highlighter-rouge">%d.%m.%Y</code>. Well back to trial and error then.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/20_DateConversion.jpg" alt="DateConv" class="lead" width="1200" height="893" loading="lazy" />
+Date conversion</p>
+
+<p>Some blog suggests using the RSDAT conversion routine. I find it odd that it does not allow me to specify the input format, but I succeed loading and converting the date.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/21_RSDAT.jpg" alt="RSDAT" class="lead" width="1200" height="893" loading="lazy" />
+RSDAT Conversion Routine</p>
+
+<p>Since I am already here I rename the sequence column to customerID and declare it as the primary key of my table. Now its time to add some transactional data. I will simply use a csv again with a salesID column as primary key and a customerID as foreign key, a date and value column.</p>
+
+<p>I add a new data source TRANS_DATA and it inherits the application components from my first data source. I am really still a bit confused what they are and do. Is it okay to use the same one created for my first data source? Well lets try.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/22_DataSource2.jpg" alt="AppComponents" class="lead" width="1200" height="893" loading="lazy" />
+Application Components are the same</p>
+
+<p>Yep, seems to work and I notice that trial and error shows in my naming convention. I created a lot of test objects ;). This time with the european csv format with a “;” (semicolon) as a separator and homogenous date formatting, BW directly recognizes the date format and suggests a conversion. I note that the date is now shown as yyyymmdd which is the HANA format. This is different to the first data source and I have the feeling that the date conversion above was not successful. But for the moment I continue anyways.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/23_CorrectDate.jpg" alt="CorrectDate" class="lead" width="1200" height="893" loading="lazy" />
+Application Components are the same as in my first data source</p>
+
+<h3 id="persistency-layer">Persistency Layer</h3>
+
+<p>Now back to the data flow. By this time I renamed my data source to CUSTOMER. I drag and drop an advanced Data Store Object as staging layer on my data flow and configure it to copy my data source. Advanced DSOs are the workhorse in BW/4. They together with the Infoobjects make up the persistent layer. Advanced DSOs can be configured to support Change Data Capture by writing a log file to a separate table, partioning according to some function as well as indexing is also supported. Moreover I can activate a write interface for planning functionality, compress the table etc… Basically I understand what happens is that an ADSO object creates a whole bunch of tables in the HANA db. I understand that an ADSO looks for the user like a table and should as such also be accessible directly in the HANA database with the fields I configured.
+Infoobjects on the other hand are optimized for OLAP performance and are either characterisitics (Master Data) or KeyFigures. They can be used to navigate the report (navigation attributes) and their attributes are again Infoobjects. This is different to the ADSO which is based on fields, i.e. columns. I chose a standard ADSO as below. I note that the ADSO has a particular activation sequence. First create the ADSO then connect it with the object it should obtain data from and only <strong>then</strong> activate it. Else it will return the error, that it does not contain any fields. Drawing the connection after activation did not work for me, I guess there is some trick that I don’t know.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/24_ADSO.jpg" alt="ADSO" class="lead" width="1200" height="893" loading="lazy" />
+ADSO configuration</p>
+
+<p>For each ADSO I have to add a transformation that allows me to define a transformation routine. Again this works by right clicking the ADSO.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/25_Create_Trans.jpg" alt="Transformation" class="lead" width="1200" height="893" loading="lazy" />
+Add Transformation</p>
+
+<p>here I can also drag and drop the mapping and even add some formulas in the mapping. As you can see below I take the absolute value of the integer amount, its positive anyways but for the sake of trying it out …, and change the variable type to unit. Variable Type currency would require me to specify a currency field which I do not have.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/27_Mapping.jpg" alt="Mapping" class="lead" width="1200" height="893" loading="lazy" />
+Mapping</p>
+
+<p>Now I also have to add a Data Process Routine which is again done by a right click. Here I can configure parallelization of extraction tasks but also filtering etc. I leave everything as is. Each object has to be activated after the configuration.</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/28_DTP.jpg" alt="DTP" class="lead" width="1200" height="893" loading="lazy" />
+Data Process Routine</p>
+
+<p>No so far so good, thats all I need for an ADSO. I add a couple more ADSOs to check what happens when I choose different types. And finally I add my Master data to conclude my learning journey with the following flow:</p>
+
+<p class="figcaption"><img src="/assets/img/blog/BWInADay/30_final.jpg" alt="Final" class="lead" width="1200" height="893" loading="lazy" />
+Flow for the day</p>
+
+<h2 id="whats-next">What’s next</h2>
+
+<p>One day was not enough to explore the virtual data objects such as the composite provider or the Open ODS View. For example to join my two tables I need a composite provider and some join routine. I save this task for another day.</p>
+
+<p>## My learnings</p>
+
+<p>Phew a long day indeed. What seems like an easy task loading and transforming some csv data in BW took me the entire day. Okay I had to setup the entire system which took quite a while but still I wonder what made it so hard.</p>
+
+<h3 id="documentation-could-be-better">Documentation could be better</h3>
+
+<p>The documentation I found was often patchy at best and I had to connect different blogs and the SAP official documentation to gain an understanding. Most often even after researching I had to fall back to trial and error. One example is the dated Getting Started guide that sould be a lot more detailed, see also this SAP thread <a href="https://blogs.sap.com/2020/02/24/setting-up-a-bw-4-instance-in-cal/">here</a>.</p>
+
+<h3 id="a-lot-of-clicking">A lot of clicking</h3>
+
+<p>Setting up a data flow required a lot of clicking. Most configurations have to be done by context menus that are often not self-explanatory. I get it with time you learn how to efficiently navigate these but I would love to a code option (there probably is one, that I am simply not aware of). Compare VSCode where every setting can also be done in a JSON.</p>
+
+<h3 id="what-about-my-expectations">What about my expectations</h3>
+
+<p>Well setup was manageable but not as simple as spinning up a docker container.
+My first admittedly high expecatiton that stuff just works was not met. Also neither the search function, nor the navigation tree worked properly. All in all a lot of stuff requires setting up or a very good understanding of how the application works This understanding is not easy to obtain, see documentation above.</p>
+
+<h3 id="much-stuff-left-to-explore">Much stuff left to explore</h3>
+
+<p>Obviously there is still a lot to explore in BW/4. Especially the more advanced topics like partioning, warm/ cold storage, delta loads etc are enough for a few more blog post. I might have to rethink my strategy though.</p>
+
+<h2 id="thank-you">Thank you</h2>
+
+<p>If you made it so far congratulations and a huge thanks. I definitely plan to do some more exploring and write about my experience.</p>
+
+<hr />
+
+<h6 id="the-screenshots-are-my-own-the-header-picture-is-a-license-free-picture-fom-pixabay">The screenshots are my own, the header picture is a license free picture fom pixabay</h6>
+
+  
+</article>
+
+
+<hr class="dingbat related" />
+
+
+
+
+  
+     
+
+
+  <aside class="about related mt4 mb4" role="complementary">
+    
+    
+
+<div class="author mt4">
+  
+
+  
+
+  
+  
+  <h2  class="page-title hr-bottom">
+    About
+  </h2>
+
+  <p>Hey, I am Jan.
+I am an Advanced Analytics/ BI Consultant turned Data Management enthusiast.
+I love to dive into new technologies. I am currently working for Mercedes-Benz.</p>
+
+
+  <div class="sidebar-social">
+    <span class="sr-only">Social:</span>
+<ul>
+  
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="mailto:jye9pyu5g@mozmail.com" title="Email" class="no-mark-external">
+      <span class="icon-mail"></span>
+      <span class="sr-only">Email</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.linkedin.com/in/jan-tatzel-42369a182" title="LinkedIn" class="no-mark-external">
+      <span class="icon-linkedin2"></span>
+      <span class="sr-only">LinkedIn</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.xing.com/profile/Jan_Tatzel" title="XING" class="no-mark-external">
+      <span class="icon-xing2"></span>
+      <span class="sr-only">XING</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://github.com/JaTat" title="GitHub" class="no-mark-external">
+      <span class="icon-github"></span>
+      <span class="sr-only">GitHub</span>
+    </a>
+  </li>
+
+
+    
+  
+</ul>
+
+  </div>
+</div>
+
+  </aside>
+
+
+  
+
+  
+  
+
+  
+    
+
+
+  <aside class="related mb4" role="complementary">  <h2 class="hr-bottom">Related Posts</h2>  <ul class="related-posts">                  <li class="h4">  <a href="/2023-01-06-Metabase/" class="flip-title"><span>Metabase - BI on ERPnext</span></a>  <time class="faded fine" datetime="2023-01-06T00:00:00+00:00">06 Jan 2023</time></li>                        <li class="h4">  <a href="/2022-05-22-PyRFC/" class="flip-title"><span>PyRFC - Remote Controlling SAP ABAP systems with python</span></a>  <time class="faded fine" datetime="2022-05-22T00:00:00+00:00">22 May 2022</time></li>                        <li class="h4">  <a href="/2022-01-02-FossErp/" class="flip-title"><span>FOSS ERP - Setting up and playing around with ERPNext</span></a>  <time class="faded fine" datetime="2022-01-02T00:00:00+00:00">02 Jan 2022</time></li>            </ul></aside>
+
+  
+
+  
+  
+
+  
+    
+
+  
+
+
+  
+<footer class="content" role="contentinfo">
+  <hr/>
+  
+    <p><small class="copyright">© 2020. All rights reserved.
+</small></p>
+  
+  
+    <nav class="legal"><small>
+    
+      
+      <a class="heading flip-title" href="/LICENSE/">LICENSE</a>
+      |
+    
+      
+      <a class="heading flip-title" href="/IMPRESSUM/">IMPRESSUM</a>
+      
+    
+    </small></nav>
+  
+    <p><small>Powered by <a class="external" href="https://hydejack.com/">Hydejack</a> v<span id="_version">9.0.4</span></small></p>
+  <hr class="sr-only"/>
+</footer>
+
+
+</main>
+
+  <hy-drawer
+  id="_drawer"
+  class=""
+  side="left"
+  threshold="10"
+  noscroll
+  
+>
+  <header id="_sidebar" class="sidebar" role="banner">
+    
+
+
+
+
+<div class="sidebar-bg sidebar-overlay" style="background-color:rgb(8,46,57);background-image:url(/assets/img/street@0.8x.jpg)"></div>
+
+    <div class="sidebar-sticky">
+  <div class="sidebar-about">
+    
+      <a class="no-hover" href="/" tabindex="-1">
+        <img src="/assets/img/Jan_rund_small.jpg" class="avatar" alt="Jan Tatzel" width="120" height="120" loading="lazy" />
+      </a>
+    
+    <a class="sidebar-title" href="/"><h2 class="h1">Jan Tatzel</h2></a>
+    
+    
+      <p class="">
+        Hey there!
+
+      </p>
+    
+  </div>
+
+  <nav class="sidebar-nav heading" role="navigation">
+    <span class="sr-only">Navigation:</span>
+<ul>
+  
+    
+      
+      <li>
+        <a
+          id="_drawer--opened"
+          href="/"
+          class="sidebar-nav-item"
+          
+        >
+          Blog
+        </a>
+      </li>
+    
+      
+      <li>
+        <a
+          
+          href="/about/"
+          class="sidebar-nav-item"
+          
+        >
+          About me
+        </a>
+      </li>
+    
+  
+</ul>
+
+  </nav>
+
+  
+  <div class="sidebar-social">
+    <span class="sr-only">Social:</span>
+<ul>
+  
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="mailto:jye9pyu5g@mozmail.com" title="Email" class="no-mark-external">
+      <span class="icon-mail"></span>
+      <span class="sr-only">Email</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.linkedin.com/in/jan-tatzel-42369a182" title="LinkedIn" class="no-mark-external">
+      <span class="icon-linkedin2"></span>
+      <span class="sr-only">LinkedIn</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.xing.com/profile/Jan_Tatzel" title="XING" class="no-mark-external">
+      <span class="icon-xing2"></span>
+      <span class="sr-only">XING</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://github.com/JaTat" title="GitHub" class="no-mark-external">
+      <span class="icon-github"></span>
+      <span class="sr-only">GitHub</span>
+    </a>
+  </li>
+
+
+    
+  
+</ul>
+
+  </div>
+</div>
+  </header>
+</hy-drawer>
+<hr class="sr-only" hidden />
+
+</hy-push-state>
+
+
+  <!--[if gt IE 10]><!---->
+  <script nomodule>!function(){var e=document.createElement("script");if(!("noModule"in e)&&"onbeforeload"in e){var t=!1;document.addEventListener("beforeload",function(n){if(n.target===e)t=!0;else if(!n.target.hasAttribute("nomodule")||!t)return;n.preventDefault()},!0),e.type="module",e.src=".",document.head.appendChild(e),e.remove()}}();
+</script>
+  <script src="/assets/js/hydejack-9.0.4.js" type="module"></script>
+  <script src="/assets/js/LEGACY-hydejack-9.0.4.js" nomodule defer></script>
+  
+
+  
+
+<!--<![endif]-->
+  
+
+
+
+<div hidden>
+  
+  <h2 class="sr-only">Templates (for web app):</h2>
+
+  <template id="_animation-template">
+  <div class="animation-main fixed-top">
+    <div class="content">
+      <div class="page"></div>
+    </div>
+  </div>
+</template>
+
+  <template id="_loading-template">
+  <div class="loading nav-btn fr">
+    <span class="sr-only">Loading…</span>
+    <span class="icon-cog"></span>
+  </div>
+</template>
+
+  <template id="_error-template">
+  <div class="page">
+    <h1 class="page-title">Error</h1>
+    
+    
+    <p class="lead">
+      Sorry, an error occurred while loading <a class="this-link" href=""></a>.
+
+    </p>
+  </div>
+</template>
+
+  <template id="_forward-template">
+  <button id="_forward" class="forward nav-btn no-hover">
+    <span class="sr-only">Forward</span>
+    <span class="icon-arrow-right2"></span>
+  </button>
+</template>
+
+  <template id="_back-template">
+  <button id="_back" class="back nav-btn no-hover">
+    <span class="sr-only">Back</span>
+    <span class="icon-arrow-left2"></span>
+  </button>
+</template>
+
+  <template id="_permalink-template">
+  <a href="#" class="permalink">
+    <span class="sr-only">Permalink</span>
+    <span class="content-hash"></span>
+  </a>
+</template>
+
+</div>
+
+
+</body>
+</html>

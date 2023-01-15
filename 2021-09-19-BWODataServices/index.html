@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en"><!--
+ __  __                __                                     __
+/\ \/\ \              /\ \             __                    /\ \
+\ \ \_\ \   __  __    \_\ \      __   /\_\      __       ___ \ \ \/'\
+ \ \  _  \ /\ \/\ \   /'_` \   /'__`\ \/\ \   /'__`\    /'___\\ \ , <
+  \ \ \ \ \\ \ \_\ \ /\ \L\ \ /\  __/  \ \ \ /\ \L\.\_ /\ \__/ \ \ \\`\
+   \ \_\ \_\\/`____ \\ \___,_\\ \____\ _\ \ \\ \__/.\_\\ \____\ \ \_\ \_\
+    \/_/\/_/ `/___/> \\/__,_ / \/____//\ \_\ \\/__/\/_/ \/____/  \/_/\/_/
+                /\___/                \ \____/
+                \/__/                  \/___/
+
+Powered by Hydejack v9.0.4 <https://hydejack.com/>
+-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<head>
+  
+
+
+
+
+
+
+  
+    
+<!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>OData Services in SAP BW/4 from a HANA table | Jan Tatzel</title>
+<meta name="generator" content="Jekyll v4.2.0" />
+<meta property="og:title" content="OData Services in SAP BW/4 from a HANA table" />
+<meta name="author" content="Jan Tatzel" />
+<meta property="og:locale" content="en" />
+<meta name="description" content="Creating an OData service from a SAP HANA table in my SAP BW/4" />
+<meta property="og:description" content="Creating an OData service from a SAP HANA table in my SAP BW/4" />
+<link rel="canonical" href="https://jantatzel.com/2021-09-19-BWODataServices/" />
+<meta property="og:url" content="https://jantatzel.com/2021-09-19-BWODataServices/" />
+<meta property="og:site_name" content="Jan Tatzel" />
+<meta property="og:image" content="https://jantatzel.com/assets/img/blog/OData/social-media-5187243_1920.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2021-09-19T00:00:00+00:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://jantatzel.com/assets/img/blog/OData/social-media-5187243_1920.png" />
+<meta property="twitter:title" content="OData Services in SAP BW/4 from a HANA table" />
+<script type="application/ld+json">
+{"author":{"@type":"Person","name":"Jan Tatzel"},"description":"Creating an OData service from a SAP HANA table in my SAP BW/4","url":"https://jantatzel.com/2021-09-19-BWODataServices/","@type":"BlogPosting","headline":"OData Services in SAP BW/4 from a HANA table","dateModified":"2021-09-19T00:00:00+00:00","datePublished":"2021-09-19T00:00:00+00:00","image":{"srcset":{"1920w":"/assets/img/blog/OData/social-media-5187243_1920.png","960w":"/assets/img/blog/OData/social-media-5187243_1280.png","480w":"/assets/img/blog/OData/social-media-5187243_640.png"},"url":"https://jantatzel.com/assets/img/blog/OData/social-media-5187243_1920.png","@type":"imageObject"},"mainEntityOfPage":{"@type":"WebPage","@id":"https://jantatzel.com/2021-09-19-BWODataServices/"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://jantatzel.com/assets/img/Jan_rund_small.jpg"},"name":"Jan Tatzel"},"@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+
+  
+
+  
+    <meta name="keywords" content="Jan Tatzel,personal page,about me">
+  
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta http-equiv="x-ua-compatible" content="ie=edge">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jan Tatzel">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+<meta name="application-name" content="Jan Tatzel">
+
+
+  <meta name="theme-color" content="rgb(8,46,57)">
+
+
+<meta name="generator" content="Hydejack v9.0.4" />
+
+
+<link rel="alternate" href="https://jantatzel.com/2021-01-31-BWInADay/" hreflang="en">
+
+<link type="application/atom+xml" rel="alternate" href="https://jantatzel.com/feed.xml" title="Jan Tatzel" />
+
+
+<link rel="shortcut icon"    href="/assets/icons/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/icons/icon-192x192.png">
+
+<link rel="manifest" href="/assets/site.webmanifest">
+
+
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com">
+
+
+
+
+<link rel="preload" href="/assets/img/swipe.svg" as="image" id="_hrefSwipeSVG">
+
+
+
+
+
+
+<script>!function(e,t){"use strict";function n(e,t,n,o){e.addEventListener?e.addEventListener(t,n,o):e.attachEvent?e.attachEvent("on"+t,n):e["on"+t]=n}e.loadJS=function(e,o){var r=t.createElement("script");r.src=e,o&&n(r,"load",o,{once:!0});var a=t.scripts[0];return a.parentNode.insertBefore(r,a),r},e._loaded=!1,e.loadJSDeferred=function(o,r){function a(){e._loaded=!0,r&&n(c,"load",r,{once:!0});var o=t.scripts[0];o.parentNode.insertBefore(c,o)}var c=t.createElement("script");return c.src=o,e._loaded?a():n(e,"load",a,{once:!0}),c},e.setRel=e.setRelStylesheet=function(e){function o(){this.rel="stylesheet"}n(t.getElementById(e),"load",o,{once:!0})}}(window,document);
+!function(a){"use strict";var b=function(b,c,d){function e(a){return h.body?a():void setTimeout(function(){e(a)})}function f(){i.addEventListener&&i.removeEventListener("load",f),i.media=d||"all"}var g,h=a.document,i=h.createElement("link");if(c)g=c;else{var j=(h.body||h.getElementsByTagName("head")[0]).childNodes;g=j[j.length-1]}var k=h.styleSheets;i.rel="stylesheet",i.href=b,i.media="only x",e(function(){g.parentNode.insertBefore(i,c?g:g.nextSibling)});var l=function(a){for(var b=i.href,c=k.length;c--;)if(k[c].href===b)return a();setTimeout(function(){l(a)})};return i.addEventListener&&i.addEventListener("load",f),i.onloadcssdefined=l,l(f),i};"undefined"!=typeof exports?exports.loadCSS=b:a.loadCSS=b}("undefined"!=typeof global?global:this);
+!function(a){if(a.loadCSS){var b=loadCSS.relpreload={};if(b.support=function(){try{return a.document.createElement("link").relList.supports("preload")}catch(b){return!1}},b.poly=function(){for(var b=a.document.getElementsByTagName("link"),c=0;c<b.length;c++){var d=b[c];"preload"===d.rel&&"style"===d.getAttribute("as")&&(a.loadCSS(d.href,d,d.getAttribute("media")),d.rel=null)}},!b.support()){b.poly();var c=a.setInterval(b.poly,300);a.addEventListener&&a.addEventListener("load",function(){b.poly(),a.clearInterval(c)}),a.attachEvent&&a.attachEvent("onload",function(){a.clearInterval(c)})}}}(this);
+!function(w) {
+  w._baseURL = '/';
+  w._publicPath = '/assets/js/';
+  w._noPushState = false;
+  w._noDrawer = false;
+  w._noNavbar = false;
+  w._noToc = false;
+  w._noSearch = false;
+}(window);
+</script>
+
+
+
+<!--[if gt IE 8]><!---->
+
+  
+
+
+
+
+<link rel="stylesheet" href="/assets/css/hydejack-9.0.4.css" id="_stylePreload">
+<link rel="stylesheet" href="/assets/icomoon/style.css" id="_iconsPreload">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto+Slab:700%7CNoto+Sans:400,400i,700,700i&display=swap" id="_fontsPreload">
+
+
+
+  <style id="_pageStyle">
+
+html{--accent-color: rgb(79,177,186);--accent-color-faded: rgba(79,177,186,0.5);--accent-color-darkened: #409ba3;--theme-color: rgb(8,46,57)}
+
+</style>
+
+
+<!--<![endif]-->
+
+
+
+
+
+</head>
+
+<body class="no-break-layout">
+  
+
+
+<hy-push-state
+  id="_pushState"
+  replace-selector="#_main"
+  link-selector="a[href]:not([href^='/assets/']):not(.external):not(.no-push-state)"
+  script-selector="script"
+  duration="500"
+  hashchange
+>
+  
+  <div id="_navbar" class="navbar fixed-top">
+  <div class="content">
+    <span class="sr-only">Jump to:</span>
+    <div class="nav-btn-bar">
+      <a id="_menu" class="nav-btn no-hover" href="#_drawer--opened">
+        <span class="sr-only">Navigation</span>
+        <span class="icon-menu"></span>
+      </a>
+      <div class="nav-span"></div>
+    </div>
+  </div>
+</div>
+<hr class="sr-only" hidden />
+
+  <main
+  id="_main"
+  class="content layout-post"
+  role="main"
+>
+  
+
+
+
+
+
+<article id="post-BWODataServices" class="page post mb6" role="article">
+  <header>
+    <h1 class="post-title flip-project-title">
+      
+        OData Services in SAP BW/4 from a HANA table
+      
+    </h1>
+
+    <div class="post-date">
+      
+      <time datetime="2021-09-19T00:00:00+00:00">19 Sep 2021</time>
+      
+      
+      
+      
+      
+
+
+
+
+
+
+
+
+
+
+
+      
+
+
+
+
+
+
+
+
+
+
+
+    </div>
+
+    
+    
+      
+        <div class="lead aspect-ratio sixteen-nine flip-project-img">
+          
+
+
+<img
+  
+    src="/assets/img/blog/OData/social-media-5187243_1920.png"
+    srcset="/assets/img/blog/OData/social-media-5187243_1920.png 1920w,/assets/img/blog/OData/social-media-5187243_1280.png 960w,/assets/img/blog/OData/social-media-5187243_640.png 480w"
+    
+  
+  alt="OData Services in SAP BW/4 from a HANA table"
+  
+  
+  width="864"
+  height="486"
+  loading="lazy"
+/>
+
+        </div>
+      
+      
+    
+
+    
+
+
+
+  
+    <p class="note-sm" >
+      Creating an OData service from a SAP HANA table in my SAP BW/4
+
+    </p>
+  
+
+
+  </header>
+
+  
+    <p>Hey there! Imagine you want to offer your carefully modelled data in your SAP BW to non-SAP tools. The BW4/HANA provides you three ways how to do this <a href="https://help.sap.com/viewer/107a6e8a38b74ede94c833ca3b7b6f51/2.0.7/en-US/4a12e84976df1b42e10000000a42189c.html">(SAP Reference)</a>:</p>
+<ol>
+  <li>OpenHub - Replicate data from the BW by writing it to databases or files</li>
+  <li>Via the HANA database itself by generating HANA views (For how to access the HANA from Python see my last blog, <a href="https://jantatzel.com/2021-08-30-PythonToBW/">link</a>)</li>
+  <li>Via OData APIs</li>
+</ol>
+
+<p>Today I am exploring the OData Services in my SAP BW4/HANA 2.0. There are two ways to expose an OData service.</p>
+
+<ol>
+  <li>An OData service directly from the HANA Database using the SAP HANA XS application server. This is not restricted to the BW application but can be done from any HANA database with the XS application server.</li>
+  <li>From the BW:
+    <ul>
+      <li>Using the Operational Data Provisioning Framework (ODP)</li>
+      <li>Using Easy Queries 
+Using OData as a communication protocol for ODP is meant for similar use cases as the OpenHub functionality. It offers the full range of functionality of ODP such as direct data access, operational delta queue, and delta extraction with initial full load.</li>
+    </ul>
+  </li>
+</ol>
+
+<p>I will build my service directly from the HANA database using the SAP HANA platform services.</p>
+
+<h1 id="what-is-odata">What is OData</h1>
+
+<p><a href="https://www.OData.org/">OData</a> is Microsoft’s attempt on a Protocol that basically allows SQL operations such as filtered selects and joins via http(s):</p>
+<ul>
+  <li>It is built on REST standards</li>
+  <li>It is currently in its 4th iteration.</li>
+  <li>It is maintained by a non-profit organization called <a href="https://en.wikipedia.org/wiki/OASIS_(organization)">OASIS</a>.</li>
+</ul>
+
+<p>With an OData API the client can specify exactly which part of a resource it wants. This makes a lot of sense if the resource is a structured entity such as a table or a data object with multiple fields. Then the client can use methods similar to SQL statements such as selecting certain columns, filtering, ordering, even joining of two entities is possible. This means the client does not overfetch data, i.e. receives more than it wanted, and probably can chew. It also prevents underfetching, resulting in many API calls to the backend by the client.</p>
+<h2 id="rest">REST</h2>
+
+<p>Since OData claims to follow the REST guidelines, which is an abbreviation of Representational State Transfer,  it is fair to expect some things. REST is the de facto architecture style for developing APIs for Web applications. This is because the REST guidelines were developed to solve a lot of challenges of the internet, i.e. for a complex client server systems with potentially multiple layers of proxies and reverse proxies in between and any number of protocols. REST was developed in the context of hypermedia systems, these are rich information systems meant for non-linear consumption. There is no official REST standard but in general APIs are said to be RESTful if they satisfy the following non functional requirements:</p>
+<ul>
+  <li>Client–server architecture: Separating the UI from data storage, retrieval and preparation for messaging/ UI consumption e.g. serializing into a set representation that can be interpreted by the widest number of clients</li>
+  <li>Statelessness: The server responding to a request needs no information about the session. Each request can be fulfilled in insolation and after the request has been fulfilled, i.e. the packet has been sent the server can forget the request.</li>
+  <li>Cacheability: Since REST assumes many layers between the client and the server, caching, i.e. storing information temporarily in another layer than the responding server, can severely increase response times. To prevent data staleness responses have to be explicit about their cacheability.</li>
+  <li>Code on demand: Servers can extend or customize the functionality of a client by transferring executable code, e.g. with JavaScript</li>
+  <li>Uniform interface: Decoupling is achieved by separating the resource from the representation, i.e. how data is represented can differ from how data is stored on the server; the representation sent to the client, including all metadata has to be enough for the client to transform the received representation, self descriptive messages including information to describe how to process the message and finally <strong>discoverability</strong> of resources, a client should be able to discover all available resources from an initial URI</li>
+</ul>
+
+<h2 id="adoption">Adoption</h2>
+
+<p>In the Microsoft and SAP system OData is available in many products such as Microsoft 365 (Office, Teams, …) via Microsoft Graph <a href="https://developer.microsoft.com/en-us/graph/graph-explorer">Graph Explorer</a>, several other products such as Azure DevOps and PowerBI.</p>
+
+<p>OData is used by SAP to serve data to its Fiori Web Apps. This means you can find it in the entire Business Suite.</p>
+
+<p>Besides these two heavy weights adoption seems limited. Netflix provided access to its video catalogs with an OData Api but discontinued it in 2013 , so did eBay (<a href="https://www.ben-morris.com/netflix-has-abandoned-OData-does-the-standard-have-a-future-without-an-ecosystem/">Source</a>).</p>
+
+<h2 id="alternatives">Alternatives</h2>
+
+<p>As always in the world of tech there are alternatives available. Facebook promotes an API standard called <a href="https://graphql.org/">GraphQL</a> for similar tasks (for a discussion see <a href="https://jeffhandley.com/2018-09-13/graphql-is-not-OData">here</a> ) and Oracle has something called <a href="https://www.oracle.com/database/technologies/appdev/rest.html">ORDS - Oracle Rest data services</a></p>
+
+<h1 id="activating-an-odata-service-for-a-single-hana-table">Activating an OData Service for a single HANA Table</h1>
+
+<p>As always I prefer exploring over huge upfront research. And as with my other blog posts I came to a point where I had to do a fair bit of research. My main challenges were authorization and no clear understanding of the various components of the BW/4 and HANA platform. Again the following are notes of my explorations annotated with later learnings.</p>
+
+<h2 id="creating-a-odata-service-in-hana-modelling-tools">Creating a OData service in HANA modelling tools</h2>
+
+<p>I start in the HANA modelling tools since this is also the IDE for the BW system. The later me will learn that there is another way using something called the Web IDE and a completely different set of Web development services but oh well for now I use what I know.</p>
+
+<p>I create a new repository package, OData, in the eclipse HANA development perspective under my Tenant DB:</p>
+
+<p><img src="/assets/img/blog/OData/CreateRepository.png" alt="Repo" /></p>
+
+<p>Following <a href="https://blogs.sap.com/2018/07/02/how-to-expose-a-hana-table-via-OData/">this</a> Blogpost I now have to create a number of files:</p>
+
+<p>They are all created similarly by right clicking the package, New, Other and choosing the correct wizard.</p>
+
+<p><img src="/assets/img/blog/OData/CreateArtifacts.png" alt="Repo" /></p>
+
+<h2 id="xssqlcc---anonymous-sql-access-configuration">.xssqlcc - Anonymous SQL Access Configuration</h2>
+<p>This is the configuration file for the sql connection.</p>
+
+<p>Current me: Following the blog I changed the filename to <em>ANONUSER</em>.</p>
+
+<p>I double clicked on the file and added <em>{ “description” : “Anonymous SQL connection” }</em>. The I activated the file with Ctrl+F3.</p>
+
+<p>I got an error during activation and had to apply a quick fix by right clicking on the error message in the eclipse console and change the file encoding.</p>
+
+<p>Later me: Quote from the <a href="https://help.sap.com/viewer/b3d0daf2a98e49ada00bf31b7ca7a42e/2.0.03/en-US/0d2aa67a44a94b14ae80dc883a4c6419.html">SAP help</a>:
+<em>In SAP HANA Extended Application Services (SAP HANA XS), you use the SQL-connection configuration file to configure a connection to the database; the connection enables the execution of SQL statements from inside a server-side JavaScript application with credentials that are different to the credentials of the requesting user.</em></p>
+
+<p>The structure of the file is simple. It contains a the description and potentially a mapping to a role configuration. The file can only be accessed from within the package and is referenced with <em>package::filename</em></p>
+
+<h2 id="xsaccess---access-authorization">.xsaccess - Access authorization</h2>
+
+<p>Next up I use the same steps as above to create a .xsaccess file. This file defines the authorization settings and also has additional parameters such as cache_control etc.</p>
+
+<p>Quoting from the SAP Help <a href="https://help.sap.com/viewer/400066065a1b46cf91df0ab436404ddc/2.0.02/en-US/5fe3b123826d4503aa66eb955a002821.html">Link</a>: <em>The application-access file enables you to specify who or what is authorized to access the content exposed by a SAP HANA XS application package and what content they are allowed to see. For example, you use the application-access file to specify if authentication is to be used to check access to package content and if rewrite rules are in place that hide or expose target and source URLs.</em></p>
+
+<p>The file has no name and is formatted in json. Parameters can also be obtained from the SAP help</p>
+
+<p>The <em>anonymous_connection”</em> line ties back to the file we created above, where OData is the package and anonuser the file.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+	</span><span class="nl">"exposed"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w"> 
+	</span><span class="nl">"authentication"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span><span class="w">
+
+	</span><span class="nl">"mime_mapping"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w">
+		</span><span class="nl">"extension"</span><span class="p">:</span><span class="w"> </span><span class="s2">"jpg"</span><span class="p">,</span><span class="w">
+		</span><span class="nl">"mimetype"</span><span class="p">:</span><span class="w"> </span><span class="s2">"image/jpeg"</span><span class="w">
+	</span><span class="p">}],</span><span class="w">
+	</span><span class="nl">"prevent_xsrf"</span><span class="w"> </span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+	</span><span class="nl">"force_ssl"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span><span class="w">
+	</span><span class="nl">"enable_etags"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+	</span><span class="nl">"anonymous_connection"</span><span class="p">:</span><span class="w"> </span><span class="s2">"OData::anonuser"</span><span class="p">,</span><span class="w">
+	</span><span class="nl">"cors"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="w">
+		</span><span class="nl">"enabled"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+		</span><span class="nl">"allowMethods"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"GET"</span><span class="p">],</span><span class="w">
+		</span><span class="nl">"allowOrigin"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"*"</span><span class="p">]</span><span class="w">
+	</span><span class="p">}],</span><span class="w">
+	</span><span class="nl">"allowHeaders"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+		</span><span class="s2">"Accept"</span><span class="p">,</span><span class="w">
+		</span><span class="s2">"Authorization"</span><span class="p">,</span><span class="w">
+		</span><span class="s2">"Content-Type"</span><span class="p">,</span><span class="w">
+		</span><span class="s2">"X-CSRF-Token"</span><span class="p">,</span><span class="w">
+		</span><span class="s2">"Access-Control-Allow-Origin"</span><span class="w">
+	</span><span class="p">],</span><span class="w">
+	</span><span class="nl">"exposeHeaders"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+		</span><span class="s2">"x-csrf-token"</span><span class="w">
+	</span><span class="p">],</span><span class="w">
+	</span><span class="nl">"cache_control"</span><span class="p">:</span><span class="w"> </span><span class="s2">"no-cache, no-store"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>Parameters:</p>
+
+<p><em>cors</em>: I only allow <strong>read</strong> access from domains other than the domain of my XS HANA application server. I could further narrow down the allowed domains by “allowOrigin” e.g. to the domain of a WebApp that is supposed to query the data from my HANA.</p>
+
+<p>Note: <em>prevent_xsrf</em>, <em>force_ssl</em> and <em>authentication</em> are  important security features and should be used in production.</p>
+
+<ul>
+  <li>
+    <p><em>prevent_xsrf</em>  checks for a valid security token of the client vs. the generated token of the HANA XS Server. It helps to prevent cross-site request-forgery (XSRF) attacks. In these attacks a user is tricked on clicking on a hyperlink to a Website that performs actions on the users behalf.</p>
+  </li>
+  <li>
+    <p><em>force_ssl</em> rejects requests via HTTP and thereby ensure the encryption of all data sent.</p>
+  </li>
+  <li>
+    <p><em>authentication</em> must be set to <em>method: Form</em> according to the documentation to redirect any user requests to a login page.</p>
+  </li>
+</ul>
+
+<p>These options require additional configuration as detailed <a href="https://help.sap.com/viewer/400066065a1b46cf91df0ab436404ddc/2.0.02/en-US/a9fc5c220d744180850996e2f5d34d6c.html">in the SAP Help</a>.</p>
+
+<h3 id="xsapp---application-description">.xsapp - Application Description</h3>
+<p>Next up is the .xsapp file. I create the file .xsapp and add curly brackets:</p>
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{}</span><span class="w">
+</span></code></pre></div></div>
+<p>Later me:
+The purpose of the file is <em>The application descriptor is the core file that you use to indicate an application’s availability within SAP HANA XS. The application descriptor marks the point in the package hierarchy at which an application’s content is available to clients. The application-descriptor file has no contents and no name; it only has the file extension .xsapp. The package that contains the application-descriptor file becomes the root path of the resources exposed by the application you develop.</em> <a href="https://help.sap.com/viewer/400066065a1b46cf91df0ab436404ddc/2.0.02/en-US/0549991ea9984835b8c06c12123b7fe2.html">Source</a> Since it defines the root it also defines the root URL where your application will be reachable. In my case this will therefore be <em>&lt;host&gt;:&lt;port&gt;/OData/</em></p>
+
+<h3 id="xsodata---odata-service-specification">.xsOData - OData Service Specification</h3>
+
+<p>Now I need the actual OData description. I do this by adding the .xsOData file and specifying which table(s) I want to expose as service.</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">service</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s2">"SAPHANADB"</span><span class="err">.</span><span class="s2">"RSDIOBJT"</span><span class="w"> </span><span class="err">as</span><span class="w"> </span><span class="s2">"IOBJT"</span><span class="err">;</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<ul>
+  <li><em>IOBJT</em> is the alias for the table name in the OData service.</li>
+</ul>
+
+<p>Tip: I use the auto code completion in the SQL editor (ctrl + space) to get the “SCHEMA”.”TABLE” specification.</p>
+
+<h2 id="run-odata-service">Run OData Service</h2>
+
+<p>A right click in the text editor of the .xsOData file, opens the context menu. Here I click on Run As 1 XS Service.</p>
+
+<p><img src="/assets/img/blog/OData/Run.png" alt="Run As" /></p>
+
+<p>The default browser opens with the URL 
+https://&lt;Hostname&gt;:43&lt;InstanceNumber&gt;//OData/&lt;Alias&gt;.xsOData/</p>
+
+<p>In my SAP CAL instance this results in the following URL:</p>
+
+<p>https://vhcalhdbdb:4302//OData/BWIobjt.xsOData/</p>
+
+<p>But bummer I get a 403 error which tells me that I have an authorization issue.</p>
+
+<h2 id="a-lot-of-trial-and-error-to-solve-the-authorization-issue">A lot of trial and error to solve the authorization issue</h2>
+
+<p>Adding a Database user to an OData service can generally be done with the XS Admin Tool. In my CAL system I can access it via https://vhcalhdbdb:4302/sap/HANA/xs/admin/#/. But which is the right user to login to the admin tool?</p>
+
+<h3 id="accessing-the-hana-xs-admin-tool">Accessing the HANA XS Admin Tool</h3>
+
+<p>In the logon screen I try all my configured users but none works. A quick google search for how to maintain the XS users tells me that there is a Command Line tool on the Application server named <em>xs</em>, see the <a href="https://help.sap.com/viewer/4505d0bdaf4948449b7f7379d24d0f0d/2.0.03/en-US/addd59069e6f444ca6ccc064d131feec.html">SAP Help</a> for the reference. I logon via putty to my application server but cannot locate the xs executable. I locate a configuration file named xsconfig via a find -name “<em>xs</em>” and it reveals that <em>XSA_ADMIN</em> is the user.</p>
+
+<p>Later me:
+Little did I know that there is a completely separate web development stack called XS<strong>A</strong> available and activated in my SAP CAL BW/4.</p>
+
+<p><img src="/assets/img/blog/OData/xsconfig.png" alt="Application Server xsconfig" /></p>
+
+<p>Trying to login with the XSA_ADMIN user results in the same problem: 403. Okay so back to square 1 and some more googling.</p>
+
+<h3 id="access-with-the-system-user">Access with the system user</h3>
+
+<p>I try again all other users and note that with the system user I get a not authorized instead of wrong credentials. So I guess I have to grant additional rights to the SYSTEM user.</p>
+
+<p>In my Tenant Database configuration in the HANA modelling tools, I grant all xs related roles to the System user by navigating to Security –&gt; Users –&gt; System and clicking on add roles.</p>
+
+<p><img src="/assets/img/blog/OData/Grant.png" alt="Grant all xs roles" /></p>
+
+<p>Most likely the WebDispatcherAdmin Role Should be enough since <em>The role sap.HANA.xs.wdisp.admin::WebDispatcherAdmin enables full access to the SAP HANA Web Dispatcher Administration tool, which the administrator uses to maintain secure inbound communication, for example, to enable SSL/TLS connections between an ABAP system and an SAP HANA XS application.</em> according to the <a href="https://help.sap.com/viewer/6b94445c94ae495c83a19646e7c3fd56/2.0.02/en-US/9fdfbe396db9496c993779db91df01aa.html">Reference</a></p>
+
+<p>I try to login again but receive the same 403 error. Weird….</p>
+
+<p>After a coffee I have an idea, what if the Admin tool tries to login to the System database?</p>
+
+<p>I grant the System user all xs related rights on the system database as above and finally I can login. But now I only see the services exposed on the system database and not the OData service created before. So again back to square 1 and of course more research.</p>
+
+<h3 id="enable-the-tenant-database">Enable the tenant database.</h3>
+
+<p>Later me: I believe what follows is a complete detour. I have been using the now deprecated HANA XS service so far. What follows now is how I discover the HANA XS<strong>A</strong> service. The actual solution is</p>
+
+<p>I find out that one has to enable a Tenant database either with the Command Line Tools as described <a href="https://help.sap.com/viewer/6b94445c94ae495c83a19646e7c3fd56/2.0.04/en-US/946072aa37274912aa7f858151dd5e65.html">here</a> or the XS HANA ADVANCED Cockpit a Web Application that in my case is located here:
+https://vhcalhdbdb.dummy.nodomain:51024/cockpit#/xsa/overview</p>
+
+<p>Here I note that my Tenant is not enabled (the green enabled label in enabled for XSA was missing) and I enable it under Actions –&gt; Enable by entering the user credentials of my Tenant and System database user.</p>
+
+<p>Since I am already here, I create a new Org under Organizations on the left and map the Tenant Database to the Org (JanOrg) again under Actions.</p>
+
+<p><img src="/assets/img/blog/OData/MapTenant.png" alt="Enable Tenant" />
+Unfortunately in the XS Admin Tool I still see the System database services.</p>
+
+<h3 id="editing-the-xsengineini">Editing the xsengine.ini</h3>
+
+<p>This blog post <a href="https://answers.sap.com/questions/13133354/how-to-access-sap-HANA-20-tenant-database-xs-admin.html">here</a> gave me the idea that I have to alter my xsengine.ini configuration file in order for the admin tools to be able to access the tenant database. This is described in more detail in the <a href="https://help.sap.com/viewer/78209c1d3a9b41cd8624338e42a12bf6/1.0.12/en-US/af24ce38929b4f1fa934a28147fc7641.html">SAP Help</a>.</p>
+
+<p>I have to open the administration editor of in the System tab of the HANA Development Perspective and choose the configuration tab. I do this in the context of my tenant database.</p>
+
+<p>There I find the xsengine.ini with the following settings under publicurl:</p>
+
+<p><img src="/assets/img/blog/OData/xsengineini.png" alt="xsengine configuration" /></p>
+
+<p>Instead of adding new public URLs I double click the entry and add database A4H which was empty before. Now a green icon in the column database indicates that the database is connected:</p>
+
+<p><img src="/assets/img/blog/OData/green.png" alt="Green light" /></p>
+
+<p>As described in the SAP help I run:</p>
+
+<pre><code class="language-SQL">
+ALTER SYSTEM ALTER CONFIGURATION ('xsengine.ini', 'database', '&lt;tenant_DB_name&gt;') SET ('public_urls', 'http_url') = 'http://&lt;virtual_hostname&gt;:80&lt;instance&gt;' WITH RECONFIGURE;
+
+ALTER SYSTEM ALTER CONFIGURATION ('xsengine.ini', 'database', '&lt;tenant_DB_name&gt;) SET ('public_urls', 'https_url') = 'https://&lt;virtual_hostname&gt;:43&lt;instance&gt;' WITH RECONFIGURE;
+
+</code></pre>
+
+<p>with</p>
+
+<ul>
+  <li>Tenant Database: A4H</li>
+  <li>Virtual_hostname: vhcalhdbdb</li>
+  <li>instance: 02</li>
+</ul>
+
+<p>I run this Query in the system database and the tenant database since its not specified in the reference. In the tenant database I get an error telling me that I do not have to specify the tenant database name, so I exclude &lt;tenant_DB_name&gt; from the query.</p>
+
+<h2 id="configure-the-sql-user-in-the-xs-admin-tool">Configure the SQL user in the XS ADMIn Tool</h2>
+
+<p>Finally I see my OData Service in the XS Admin tool. I can configure the Database user with a click on edit. I add the SAPHANADB user to the anonymous SQl connection.</p>
+
+<p><img src="/assets/img/blog/OData/ODataXS.png" alt="Finally the db user for the OData Service can be configured" /></p>
+
+<h2 id="accessing-the-odata-service">Accessing the OData service</h2>
+
+<p>In the browser I can now access the OData service under:</p>
+
+<p>https://vhcalhdbdb:4302//OData/BWIobjt.xsOData/</p>
+
+<p>and the metadata of the service under</p>
+
+<p>https://vhcalhdbdb:4302//OData/BWIobjt.xsOData/$metadata</p>
+
+<p>So finally I can query all InfoObject descriptions in my BW/4 with a get request to https://vhcalhdbdb:4302//OData/BWIobjt.xsOData/IOBJT?$filter=LANGU%20eq%20%27E%27</p>
+
+<p>This returns English descriptions as xml:</p>
+
+<p><img src="/assets/img/blog/OData/ODataQuery.png" alt="Get Data" /></p>
+
+<h2 id="conclusion">Conclusion:</h2>
+
+<p>It was again a bit harder than I thought. Getting the OData service to work involved a lot of trial and error and googling. Although with a properly set up system creating an OData service can be very fast since it only involves the steps described under Activating an OData Service for a single HANA Table.</p>
+
+<h2 id="note-from-future-me">Note from future me:</h2>
+
+<p>SAP HANA XS, extended application services, are deprecated as of SAP HANA 2.0 SPS02. Currently we are at SPS 05. The services were superseded by HANA XSA the 
+<strong>advanced</strong> application services. This is a set of tools to allow Web applications natively on HANA. XSA uses cloud foundry to allow microservice style, containerized web services and comes with a full stack of development tools, such as a Web IDE. The administration cockpit I discovered above is part of the stack. Apparently the integration of XSA with SAP BW/4 is still a bit patchy. For example HANA containers spawned by XSA are not aware of schemas defined in BW/4, see <a href="https://blogs.sap.com/2020/02/21/bw-4-hana-mixed-scenarios-with-native-hana-hdi-containers/">this</a> blog post. See <a href="https://blogs.sap.com/2017/09/04/xs-advanced-for-not-so-dummies/">here</a> for an introduction to XSA. XSA sounds cool so I plan to have a look at it in the near future.
+——–</p>
+
+<h6 id="the-screenshots-are-my-own-the-header-picture-is-a-license-free-picture-from-pixabay">The screenshots are my own, the header picture is a license free picture from pixabay</h6>
+
+  
+</article>
+
+
+<hr class="dingbat related" />
+
+
+
+
+  
+     
+
+
+  <aside class="about related mt4 mb4" role="complementary">
+    
+    
+
+<div class="author mt4">
+  
+
+  
+
+  
+  
+  <h2  class="page-title hr-bottom">
+    About
+  </h2>
+
+  <p>Hey, I am Jan.
+I am an Advanced Analytics/ BI Consultant turned Data Management enthusiast.
+I love to dive into new technologies. I am currently working for Mercedes-Benz.</p>
+
+
+  <div class="sidebar-social">
+    <span class="sr-only">Social:</span>
+<ul>
+  
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="mailto:jye9pyu5g@mozmail.com" title="Email" class="no-mark-external">
+      <span class="icon-mail"></span>
+      <span class="sr-only">Email</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.linkedin.com/in/jan-tatzel-42369a182" title="LinkedIn" class="no-mark-external">
+      <span class="icon-linkedin2"></span>
+      <span class="sr-only">LinkedIn</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.xing.com/profile/Jan_Tatzel" title="XING" class="no-mark-external">
+      <span class="icon-xing2"></span>
+      <span class="sr-only">XING</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://github.com/JaTat" title="GitHub" class="no-mark-external">
+      <span class="icon-github"></span>
+      <span class="sr-only">GitHub</span>
+    </a>
+  </li>
+
+
+    
+  
+</ul>
+
+  </div>
+</div>
+
+  </aside>
+
+
+  
+
+  
+  
+
+  
+    
+
+
+  <aside class="related mb4" role="complementary">  <h2 class="hr-bottom">Related Posts</h2>  <ul class="related-posts">                  <li class="h4">  <a href="/2023-01-06-Metabase/" class="flip-title"><span>Metabase - BI on ERPnext</span></a>  <time class="faded fine" datetime="2023-01-06T00:00:00+00:00">06 Jan 2023</time></li>                        <li class="h4">  <a href="/2022-05-22-PyRFC/" class="flip-title"><span>PyRFC - Remote Controlling SAP ABAP systems with python</span></a>  <time class="faded fine" datetime="2022-05-22T00:00:00+00:00">22 May 2022</time></li>                        <li class="h4">  <a href="/2022-01-02-FossErp/" class="flip-title"><span>FOSS ERP - Setting up and playing around with ERPNext</span></a>  <time class="faded fine" datetime="2022-01-02T00:00:00+00:00">02 Jan 2022</time></li>            </ul></aside>
+
+  
+
+  
+  
+
+  
+    
+
+  
+
+
+  
+<footer class="content" role="contentinfo">
+  <hr/>
+  
+    <p><small class="copyright">© 2020. All rights reserved.
+</small></p>
+  
+  
+    <nav class="legal"><small>
+    
+      
+      <a class="heading flip-title" href="/LICENSE/">LICENSE</a>
+      |
+    
+      
+      <a class="heading flip-title" href="/IMPRESSUM/">IMPRESSUM</a>
+      
+    
+    </small></nav>
+  
+    <p><small>Powered by <a class="external" href="https://hydejack.com/">Hydejack</a> v<span id="_version">9.0.4</span></small></p>
+  <hr class="sr-only"/>
+</footer>
+
+
+</main>
+
+  <hy-drawer
+  id="_drawer"
+  class=""
+  side="left"
+  threshold="10"
+  noscroll
+  
+>
+  <header id="_sidebar" class="sidebar" role="banner">
+    
+
+
+
+
+<div class="sidebar-bg sidebar-overlay" style="background-color:rgb(8,46,57);background-image:url(/assets/img/street@0.8x.jpg)"></div>
+
+    <div class="sidebar-sticky">
+  <div class="sidebar-about">
+    
+      <a class="no-hover" href="/" tabindex="-1">
+        <img src="/assets/img/Jan_rund_small.jpg" class="avatar" alt="Jan Tatzel" width="120" height="120" loading="lazy" />
+      </a>
+    
+    <a class="sidebar-title" href="/"><h2 class="h1">Jan Tatzel</h2></a>
+    
+    
+      <p class="">
+        Hey there!
+
+      </p>
+    
+  </div>
+
+  <nav class="sidebar-nav heading" role="navigation">
+    <span class="sr-only">Navigation:</span>
+<ul>
+  
+    
+      
+      <li>
+        <a
+          id="_drawer--opened"
+          href="/"
+          class="sidebar-nav-item"
+          
+        >
+          Blog
+        </a>
+      </li>
+    
+      
+      <li>
+        <a
+          
+          href="/about/"
+          class="sidebar-nav-item"
+          
+        >
+          About me
+        </a>
+      </li>
+    
+  
+</ul>
+
+  </nav>
+
+  
+  <div class="sidebar-social">
+    <span class="sr-only">Social:</span>
+<ul>
+  
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="mailto:jye9pyu5g@mozmail.com" title="Email" class="no-mark-external">
+      <span class="icon-mail"></span>
+      <span class="sr-only">Email</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.linkedin.com/in/jan-tatzel-42369a182" title="LinkedIn" class="no-mark-external">
+      <span class="icon-linkedin2"></span>
+      <span class="sr-only">LinkedIn</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://www.xing.com/profile/Jan_Tatzel" title="XING" class="no-mark-external">
+      <span class="icon-xing2"></span>
+      <span class="sr-only">XING</span>
+    </a>
+  </li>
+
+
+    
+      
+
+
+
+  
+
+  
+  
+  
+  
+
+  
+
+  
+
+  <li>
+    <a href="https://github.com/JaTat" title="GitHub" class="no-mark-external">
+      <span class="icon-github"></span>
+      <span class="sr-only">GitHub</span>
+    </a>
+  </li>
+
+
+    
+  
+</ul>
+
+  </div>
+</div>
+  </header>
+</hy-drawer>
+<hr class="sr-only" hidden />
+
+</hy-push-state>
+
+
+  <!--[if gt IE 10]><!---->
+  <script nomodule>!function(){var e=document.createElement("script");if(!("noModule"in e)&&"onbeforeload"in e){var t=!1;document.addEventListener("beforeload",function(n){if(n.target===e)t=!0;else if(!n.target.hasAttribute("nomodule")||!t)return;n.preventDefault()},!0),e.type="module",e.src=".",document.head.appendChild(e),e.remove()}}();
+</script>
+  <script src="/assets/js/hydejack-9.0.4.js" type="module"></script>
+  <script src="/assets/js/LEGACY-hydejack-9.0.4.js" nomodule defer></script>
+  
+
+  
+
+<!--<![endif]-->
+  
+
+
+
+<div hidden>
+  
+  <h2 class="sr-only">Templates (for web app):</h2>
+
+  <template id="_animation-template">
+  <div class="animation-main fixed-top">
+    <div class="content">
+      <div class="page"></div>
+    </div>
+  </div>
+</template>
+
+  <template id="_loading-template">
+  <div class="loading nav-btn fr">
+    <span class="sr-only">Loading…</span>
+    <span class="icon-cog"></span>
+  </div>
+</template>
+
+  <template id="_error-template">
+  <div class="page">
+    <h1 class="page-title">Error</h1>
+    
+    
+    <p class="lead">
+      Sorry, an error occurred while loading <a class="this-link" href=""></a>.
+
+    </p>
+  </div>
+</template>
+
+  <template id="_forward-template">
+  <button id="_forward" class="forward nav-btn no-hover">
+    <span class="sr-only">Forward</span>
+    <span class="icon-arrow-right2"></span>
+  </button>
+</template>
+
+  <template id="_back-template">
+  <button id="_back" class="back nav-btn no-hover">
+    <span class="sr-only">Back</span>
+    <span class="icon-arrow-left2"></span>
+  </button>
+</template>
+
+  <template id="_permalink-template">
+  <a href="#" class="permalink">
+    <span class="sr-only">Permalink</span>
+    <span class="content-hash"></span>
+  </a>
+</template>
+
+</div>
+
+
+</body>
+</html>
