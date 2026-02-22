@@ -1,6 +1,12 @@
 ---
 layout: post
 title: Vibe Coding a BW/4 Migration to a Spark Lakehouse with Delta Tables
+image:
+  path: /assets/img/blog/VibeBW4/data-flow_1920.jpg
+  srcset:
+    1920w: /assets/img/blog/VibeBW4/data-flow_1920.jpg
+    960w:  /assets/img/blog/VibeBW4/data-flow_1280.jpg
+    480w:  /assets/img/blog/VibeBW4/data-flow_640.jpg
 description: >
   Using vibe coding to extract transformation logic from SAP BW/4 system tables and rebuild it on a Spark Lakehouse with Delta Tables
 grouped: true
@@ -223,4 +229,4 @@ If you're facing a BW migration, I'd suggest starting small: pick one data flow 
 
 --------
 
-###### This post reflects my personal experience and experiments
+###### The header picture is by [Jordan Harrison](https://unsplash.com/@jordanharrison) on Unsplash
